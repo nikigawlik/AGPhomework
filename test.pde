@@ -13,6 +13,20 @@ PImage backgroundImage;
 float worldWidth;
 float worldHeight;
 
+class Comet {
+   float x;
+   float y;
+   
+   Comet(float x, float y) {
+     this.x = x;
+     this.y = y;
+   }
+   
+   void draw() {
+      circle(20);
+   }
+}
+
 void setup() {
   // display
   size(1000, 800);
