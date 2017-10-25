@@ -6,7 +6,9 @@
  
 
 // physical utility constants
-final float km = 1000;
+final float km = 1000; // kilometer, in m
+final float h = 3600; // hour, in s
+final float kmH = 1 / 3.6; // kilometers per hour, in m/s
 
 // other constants
 final float xOrigin = 500; // in px
@@ -15,19 +17,34 @@ final float yOrigin = 700; // in px
 final float baseWorldHeight = 200 * km; // in m
 final float markerHeight = 30 * km; // in m
 
+final float initialImpactAngle = radians(170); // initial comet impact angle relative to x axis, in radians
+final float initialVelocity = 32000 * kmH; // initial comet velocity, in m/s
+
 // class that models and draws the comet
 class Comet {
    float x;
    float y;
    float radius = 20*100; // 100x scale
    // verlocity in m/s:
-   float vX = cos(radians(10)) * 20*km; // calculated from impact angle (10 degrees)
-   float vY = -sin(radians(10)) * 20*km;
+   float vX;
+   float vY;
    
-   
-   Comet(float x, float y) {
+   Comet(float x, float y, float impactAngle, float velocity) {
      this.x = x;
      this.y = y;
+     vX = -cos(impactAngle) * velocity; // calculated from impact angle (10 degrees)
+     vY = -sin(impactAngle) * velocity;
+   }
+
+   void move(float deltaTime) {
+     x += vX * deltaTime;
+     y += vY * deltaTime;
+
+     if (y < radius) {
+       y = radius;
+       vX = 0;
+       vY = 0;
+     }
    }
    
    void draw() {
@@ -82,6 +99,10 @@ class Rocket {
     this.x = x;
     this.y = y + h/2; // offset
   }
+
+  void move(float deltaTime) {
+    // do nothing for now
+  }
   
   void draw() {
     pushMatrix();
@@ -107,6 +128,7 @@ PImage grooveImage;
 float worldWidth;
 float worldHeight;
 float worldScale;
+float timeScale;
 float worldBorderLeft;
 float worldBorderRight;
 
@@ -126,6 +148,7 @@ void setup() {
   worldWidth = worldHeight * screenRatio;
 
   worldScale = (float) width / worldWidth; // in px/m
+  timeScale = 1.0; // in s/s
 
   worldBorderLeft = -xOrigin / worldScale;
   worldBorderRight = -xOrigin / worldScale + worldWidth;
@@ -144,12 +167,20 @@ void setup() {
   backgroundImage.updatePixels();
   
   // initialize objects
-  comet = new Comet(-60*km, 40*km);
+  comet = new Comet(-120*km, 40*km, initialImpactAngle, initialVelocity);
   rocket = new Rocket(0*km, 0*km);
   floor = new Floor(yOrigin / worldScale, markerHeight);
 }
+
+void update() {
+  float deltaTime = timeScale * 1.0 / frameRate;
+  comet.move(deltaTime);
+  rocket.move(deltaTime);
+}
  
 void draw() {
+  update();
+
   background(backgroundImage);
   
   // add a transform from world space to screen space
