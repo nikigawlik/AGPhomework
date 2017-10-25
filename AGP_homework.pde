@@ -8,6 +8,13 @@
 // physical utility constants
 final float km = 1000;
 
+// other constants
+final float xOrigin = 500; // in px
+final float yOrigin = 700; // in px
+
+final float baseWorldHeight = 200 * km; // in m
+final float markerHeight = 30 * km; // in m
+
 // class that models and draws the comet
 class Comet {
    float x;
@@ -42,22 +49,24 @@ class Comet {
 
 // class that draws the floor and other environmental things
 class Floor {
-  float thickness = 30*km; // thickness of the floor
-  float markerHeight = 30*km; // height of the marking line (height at which the comet should be shot)
+  float thickness; // thickness of the floor
+  float markerHeight; // height of the marking line (height at which the comet should be shot)
   
-  Floor() {
+  Floor(float thickness, float markerHeight) {
+    this.thickness = thickness;
+    this.markerHeight = markerHeight;
   }
   
   void draw() {
    // draw ground
    fill(128);
    strokeWeight(0);
-   rect(0, -thickness, worldWidth, thickness);
+   rect(worldBorderLeft, -thickness, worldWidth, thickness);
    
    // draw marker line
    fill(255);
    strokeWeight(100);
-   line(0, markerHeight, worldWidth, markerHeight);
+   line(worldBorderLeft, markerHeight, worldWidth, markerHeight);
   }
 }
 
@@ -97,6 +106,9 @@ PImage grooveImage;
 // world
 float worldWidth;
 float worldHeight;
+float worldScale;
+float worldBorderLeft;
+float worldBorderRight;
 
 Comet comet;
 Floor floor;
@@ -110,8 +122,13 @@ void setup() {
   // dimensions
   float screenRatio = (float)(width) / (float)height;
    
-  worldHeight = 200 * km;
+  worldHeight = baseWorldHeight;
   worldWidth = worldHeight * screenRatio;
+
+  worldScale = (float) width / worldWidth; // in px/m
+
+  worldBorderLeft = -xOrigin / worldScale;
+  worldBorderRight = -xOrigin / worldScale + worldWidth;
   
   // load images
   knobImage = loadImage("knob.png");
@@ -127,18 +144,18 @@ void setup() {
   backgroundImage.updatePixels();
   
   // initialize objects
-  comet = new Comet(5*km, 40*km);
-  rocket = new Rocket(60*km, 0*km);
-  floor = new Floor();
+  comet = new Comet(-60*km, 40*km);
+  rocket = new Rocket(0*km, 0*km);
+  floor = new Floor(yOrigin / worldScale, markerHeight);
 }
  
 void draw() {
   background(backgroundImage);
   
   // add a transform from world space to screen space
-  scale((float) width / worldWidth, -(float) height / worldHeight);
-  translate(0, -worldHeight);
-  translate(0, floor.thickness); // some extra for the floor
+  translate(0, height);
+  scale(worldScale, -worldScale);
+  translate(xOrigin / worldScale, (height - yOrigin) / worldScale); 
 
   comet.draw();
   floor.draw(); 
