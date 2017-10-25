@@ -1,22 +1,26 @@
 /**
  * @author Nils Gawlik
- * @date 2017-10-11
+ * @date 2017-10-25
  * @matrikelnummer 553449
  */
  
 
-// physical utility constants
+// -- physical utility constants --
 final float km = 1000; // kilometer, in m
 final float h = 3600; // hour, in s
 final float kmH = 1 / 3.6; // kilometers per hour, in m/s
 
-// other constants
+// -- other constants --
+
+// origin of world on screen
 final float xOrigin = 500; // in px
 final float yOrigin = 700; // in px
 
-final float baseWorldHeight = 200 * km; // in m
-final float markerHeight = 30 * km; // in m
+final float baseWorldHeight = 200 * km; // in m, height of the displayed world
+final float markerHeight = 30 * km; // in m, height of horizontal marker line
+final float baseTimeScale = 1.0; // in s/s, time scale
 
+// comet
 final float initialImpactAngle = radians(170); // initial comet impact angle relative to x axis, in radians
 final float initialVelocity = 32000 * kmH; // initial comet velocity, in m/s
 
@@ -24,7 +28,7 @@ final float initialVelocity = 32000 * kmH; // initial comet velocity, in m/s
 class Comet {
    float x;
    float y;
-   float radius = 20*100; // 100x scale
+   float radius = 20*100; // 20 m, 100x scale
    // verlocity in m/s:
    float vX;
    float vY;
@@ -32,14 +36,17 @@ class Comet {
    Comet(float x, float y, float impactAngle, float velocity) {
      this.x = x;
      this.y = y;
-     vX = -cos(impactAngle) * velocity; // calculated from impact angle (10 degrees)
+     vX = -cos(impactAngle) * velocity; // calculated initial velocity vector
      vY = -sin(impactAngle) * velocity;
    }
 
+   // move the comet, deltaTime = time passed since last update, in s
    void move(float deltaTime) {
+     // update position
      x += vX * deltaTime;
      y += vY * deltaTime;
 
+     // handle collision with ground
      if (y < radius) {
        y = radius;
        vX = 0;
@@ -106,6 +113,7 @@ class Rocket {
   
   void draw() {
     pushMatrix();
+
     translate(x, y); // translation to simplify calculations below
     // calculate and draw the rocket parts
     strokeWeight(0);
@@ -125,12 +133,12 @@ PImage buttonUpImage;
 PImage grooveImage;
 
 // world
-float worldWidth;
-float worldHeight;
-float worldScale;
-float timeScale;
-float worldBorderLeft;
-float worldBorderRight;
+float worldWidth; // width of world, in m
+float worldHeight; // height of world, in m
+float worldScale; // scale of world, in px/m
+float timeScale; // time scale, in s/s
+float worldBorderLeft; // distance from origin to left border, in m
+float worldBorderRight; // distance from origin to right border, in m
 
 Comet comet;
 Floor floor;
@@ -147,8 +155,8 @@ void setup() {
   worldHeight = baseWorldHeight;
   worldWidth = worldHeight * screenRatio;
 
-  worldScale = (float) width / worldWidth; // in px/m
-  timeScale = 1.0; // in s/s
+  worldScale = (float) width / worldWidth;
+  timeScale = baseTimeScale;
 
   worldBorderLeft = -xOrigin / worldScale;
   worldBorderRight = -xOrigin / worldScale + worldWidth;
@@ -172,6 +180,7 @@ void setup() {
   floor = new Floor(yOrigin / worldScale, markerHeight);
 }
 
+// called every frame before drawing
 void update() {
   float deltaTime = timeScale * 1.0 / frameRate;
   comet.move(deltaTime);
@@ -184,9 +193,9 @@ void draw() {
   background(backgroundImage);
   
   // add a transform from world space to screen space
-  translate(0, height);
-  scale(worldScale, -worldScale);
-  translate(xOrigin / worldScale, (height - yOrigin) / worldScale); 
+  translate(0, height); // offset because of upcoming scale
+  scale(worldScale, -worldScale); // scale and flip in y direction
+  translate(xOrigin / worldScale, (height - yOrigin) / worldScale);  // move origin to correct position
 
   comet.draw();
   floor.draw(); 
@@ -195,7 +204,7 @@ void draw() {
   // UI
   resetMatrix(); // reset back to screen space for UI
   
-  float centerLineHeight = height - buttonUpImage.height/2 - 16;
+  float centerLineHeight = height - buttonUpImage.height/2 - 16; // imaginary line to align the other ui elements to
   image(buttonUpImage, 16, centerLineHeight - buttonUpImage.height/2);
   image(grooveImage, buttonUpImage.width + 16 + 16, centerLineHeight - grooveImage.height/2);
   image(knobImage, buttonUpImage.width + 16 + 16 + grooveImage.width/2 - knobImage.width/2, centerLineHeight - knobImage.height/2);
