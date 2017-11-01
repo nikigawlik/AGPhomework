@@ -132,7 +132,18 @@ class Button {
   }
 
   protected void performAction() {
-    // do nothing
+    // decide on action
+    switch (state) {
+      case 0: // start
+        timeScale = baseTimeScale;
+      break;
+      case 1: // reset
+        teardownDynamic();
+        setupDynamic();
+      break;
+    }
+
+    // update state
     state = (state + 1) % 2; // increase state
   }
 
@@ -224,7 +235,7 @@ void setup() {
   worldWidth = worldHeight * screenRatio;
 
   worldScale = (float) width / worldWidth;
-  timeScale = baseTimeScale;
+  timeScale = 0; // no prograssion at start, activated by start button
 
   worldBorderLeft = -xOrigin / worldScale;
   worldBorderRight = -xOrigin / worldScale + worldWidth;
@@ -252,8 +263,7 @@ void setup() {
   backgroundImage.updatePixels();
   
   // initialize objects
-  comet = new Comet(-120*km, 40*km, initialImpactAngle, initialVelocity);
-  rocket = new Rocket(0*km, 0*km);
+  setupDynamic();
   floor = new Floor(yOrigin / worldScale, markerHeight);
 
   PImage[] images = new PImage[4];
@@ -265,6 +275,19 @@ void setup() {
   texts[0] = "Start";
   texts[1] = "Reset";
   button = new Button(120, 70, images, texts, -12, 8);
+}
+
+// set up dynamic objects
+void setupDynamic() {
+  comet = new Comet(-120*km, 40*km, initialImpactAngle, initialVelocity);
+  rocket = new Rocket(0*km, 0*km);
+}
+
+// tear down dynamic objects (for reset)
+void teardownDynamic() {
+  comet = null;
+  rocket = null;
+  timeScale = 0;
 }
 
 // called every frame before drawing
