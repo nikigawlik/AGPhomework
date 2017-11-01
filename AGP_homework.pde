@@ -202,9 +202,6 @@ class Rocket {
 
 // images
 PImage backgroundImage;
-PImage knobImage;
-PImage buttonUpImage;
-PImage grooveImage;
 PImage buttonGreenUp;
 PImage buttonGreenDown;
 PImage buttonRedUp;
@@ -241,10 +238,6 @@ void setup() {
   worldBorderRight = -xOrigin / worldScale + worldWidth;
   
   // load images
-  knobImage = loadImage("knob.png");
-  buttonUpImage = loadImage("buttonUp.png");
-  grooveImage = loadImage("groove.png");
-
   buttonGreenUp = loadImage("b_green_up.png");
   buttonGreenDown = loadImage("b_green_down.png");
   buttonRedUp = loadImage("b_red_up.png");
@@ -323,9 +316,4 @@ void draw() {
   resetMatrix(); // reset back to screen space for UI
   
   button.draw();
-  
-  float centerLineHeight = height - buttonUpImage.height/2 - 16; // imaginary line to align the other ui elements to
-  //image(buttonUpImage, 16, centerLineHeight - buttonUpImage.height/2);
-  //image(grooveImage, buttonUpImage.width + 16 + 16, centerLineHeight - grooveImage.height/2);
-  //image(knobImage, buttonUpImage.width + 16 + 16 + grooveImage.width/2 - knobImage.width/2, centerLineHeight - knobImage.height/2);
 }
