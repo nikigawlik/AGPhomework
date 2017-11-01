@@ -83,14 +83,77 @@ class Floor {
   
   void draw() {
    // draw ground
-   fill(128);
+   fill(0);
    strokeWeight(0);
    rect(worldBorderLeft, -thickness, worldWidth, thickness);
    
    // draw marker line
-   fill(255);
+   fill(0);
    strokeWeight(100);
    line(worldBorderLeft, markerHeight, worldWidth, markerHeight);
+  }
+}
+
+class Button {
+  boolean isDown = false;
+
+  int state = 0; // 0 = red, 1 = green
+  int numberOfStates = 2;
+
+  PImage[] images; // images for the states, alternating eween up and down position
+  String[] texts;
+  float downOffset; // offset when the button is down
+
+  float textOffsetY; // normal offset
+
+  float x;
+  float y;
+
+  Button(float x, float y, PImage[] images, String[] texts, float textOffsetY, float downOffset) {
+    this.x = x;
+    this.y = y;
+    this.images = images;
+    this.texts = texts;
+    this.textOffsetY = textOffsetY;
+    this.downOffset = downOffset;
+  }
+
+  void mousePressed() {
+    if (checkBounds()) {
+      isDown = true;
+    }
+  }
+
+  void mouseReleased() {
+    if (isDown) {
+      isDown = false;
+      performAction();
+    }
+  }
+
+  protected void performAction() {
+    // do nothing
+    state = (state + 1) % 2; // increase state
+  }
+
+  void draw() {
+    imageMode(CENTER);
+    image(currentImage(), x, y);
+    if (texts != null && state < texts.length) {
+      fill(255);
+      textAlign(CENTER, CENTER);
+      textSize(33);
+      text(texts[state], x, y + textOffsetY + (isDown? downOffset : 0));
+    }
+  }
+
+  PImage currentImage() {
+    return isDown? images[state * 2 + 1] : images[state * 2]; // pick odd images for down, even for up
+  }
+
+  boolean checkBounds() {
+    return mouseX >= x - currentImage().width/2 && mouseX < x + currentImage().width/2
+    && mouseY >= y - currentImage().height/2 && mouseY < y + currentImage().height/2;
   }
 }
 
@@ -117,9 +180,9 @@ class Rocket {
     translate(x, y); // translation to simplify calculations below
     // calculate and draw the rocket parts
     strokeWeight(0);
-    fill(192);
+    fill(0);
     rect(-w/2, -h/2, w, h - cap);
-    fill(200, 50, 60);
+    fill(0);
     triangle(-w/2, -h/2 + h - cap, w/2, -h/2 + h - cap, 0, h/2);
     
     popMatrix();
@@ -131,6 +194,10 @@ PImage backgroundImage;
 PImage knobImage;
 PImage buttonUpImage;
 PImage grooveImage;
+PImage buttonGreenUp;
+PImage buttonGreenDown;
+PImage buttonRedUp;
+PImage buttonRedDown;
 
 // world
 float worldWidth; // width of world, in m
@@ -143,6 +210,7 @@ float worldBorderRight; // distance from origin to right border, in m
 Comet comet;
 Floor floor;
 Rocket rocket;
+Button button;
 
 void setup() {
   // display
@@ -165,12 +233,21 @@ void setup() {
   knobImage = loadImage("knob.png");
   buttonUpImage = loadImage("buttonUp.png");
   grooveImage = loadImage("groove.png");
+
+  buttonGreenUp = loadImage("b_green_up.png");
+  buttonGreenDown = loadImage("b_green_down.png");
+  buttonRedUp = loadImage("b_red_up.png");
+  buttonRedDown = loadImage("b_red_down.png");
   
   // generate image for background
+  color c1 = #FAD723;
+  color c2= #4D221F;
   backgroundImage = createImage(width, height, RGB);
   backgroundImage.loadPixels();
+
   for (int i = 0; i < backgroundImage.pixels.length; i++) {
-    backgroundImage.pixels[i] = color(0, 0, floor(i / backgroundImage.width) * 0.33); // TODO use realistic colors to represent the athmosphere (and scale correctly)
+    float amount = (float) i / backgroundImage.pixels.length;
+    backgroundImage.pixels[i] = lerpColor(c1, c2, amount);; // TODO use realistic colors to represent the athmosphere (and scale correctly)
   }
   backgroundImage.updatePixels();
   
@@ -178,6 +255,16 @@ void setup() {
   comet = new Comet(-120*km, 40*km, initialImpactAngle, initialVelocity);
   rocket = new Rocket(0*km, 0*km);
   floor = new Floor(yOrigin / worldScale, markerHeight);
+
+  PImage[] images = new PImage[4];
+  images[0] = buttonGreenUp;
+  images[1] = buttonGreenDown;
+  images[2] = buttonRedUp;
+  images[3] = buttonRedDown;
+  String[] texts = new String[2];
+  texts[0] = "Start";
+  texts[1] = "Reset";
+  button = new Button(120, 70, images, texts, -12, 8);
 }
 
 // called every frame before drawing
@@ -185,6 +272,14 @@ void update() {
   float deltaTime = timeScale * 1.0 / frameRate;
   comet.move(deltaTime);
   rocket.move(deltaTime);
+}
+
+void mouseReleased() {
+  button.mouseReleased();
+}
+
+void mousePressed() {
+  button.mousePressed();
 }
  
 void draw() {
@@ -204,8 +299,10 @@ void draw() {
   // UI
   resetMatrix(); // reset back to screen space for UI
   
+  button.draw();
+  
   float centerLineHeight = height - buttonUpImage.height/2 - 16; // imaginary line to align the other ui elements to
-  image(buttonUpImage, 16, centerLineHeight - buttonUpImage.height/2);
-  image(grooveImage, buttonUpImage.width + 16 + 16, centerLineHeight - grooveImage.height/2);
-  image(knobImage, buttonUpImage.width + 16 + 16 + grooveImage.width/2 - knobImage.width/2, centerLineHeight - knobImage.height/2);
+  //image(buttonUpImage, 16, centerLineHeight - buttonUpImage.height/2);
+  //image(grooveImage, buttonUpImage.width + 16 + 16, centerLineHeight - grooveImage.height/2);
+  //image(knobImage, buttonUpImage.width + 16 + 16 + grooveImage.width/2 - knobImage.width/2, centerLineHeight - knobImage.height/2);
 }

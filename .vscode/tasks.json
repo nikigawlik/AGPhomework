@@ -8,5 +8,5 @@
 		"--sketch=${workspaceRoot}",
 		"--output=${workspaceRoot}\\out",
 		"--run"
-    ]
+	]
 }
