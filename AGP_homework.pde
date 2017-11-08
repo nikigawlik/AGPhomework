@@ -11,6 +11,9 @@ final float h = 3600; // hour, in s
 final float kmH = 1 / 3.6; // kilometers per hour, in m/s
 
 // -- other constants --
+// world constants
+final float gravityX = 0.0; // in m/s
+final float gravityY = -9.81; // in m/s
 
 // origin of world on screen
 final float xOrigin = 500; // in px
@@ -42,9 +45,14 @@ class Comet {
 
    // move the comet, deltaTime = time passed since last update, in s
    void move(float deltaTime) {
-     // update position
-     x += vX * deltaTime;
-     y += vY * deltaTime;
+
+     // update position accounting for velocity and gravity
+     x += vX * deltaTime + 0.5 * gravityX * pow(deltaTime, 2);
+     y += vY * deltaTime + 0.5 * gravityY * pow(deltaTime, 2);
+
+     // update and remember velocity for next iteration
+     vX += gravityX * deltaTime;
+     vY += gravityY * deltaTime;
 
      // handle collision with ground
      if (y < radius) {
