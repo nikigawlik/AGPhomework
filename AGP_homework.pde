@@ -33,6 +33,7 @@ final float initialVelocity = 32000 * kmH; // initial comet velocity, in m/s
 final float rocketLaunchSpeedMin = sqrt(2 * -gravityY * (markerHeight - 100*100));
 final float rocketLaunchSpeed = rocketLaunchSpeedMin * 2; // actual speed is 2 times that
 
+// Set that contains all currently existing game objects
 HashSet<GameObject> allObjects = new HashSet<GameObject>();
 
 // Parent class for physics objects
@@ -50,11 +51,12 @@ class GameObject {
     vX = 0;
     vY = 0;
 
-    // add to global list
+    // add to global game object list
     allObjects.add(this);
   }
 
   void die() {
+    // mark as dead so it can be cleaned up later
     markedAsDead = true;
   }
   
@@ -401,13 +403,18 @@ void teardownDynamic() {
 void update() {
   float deltaTime = timeScale * 1.0 / frameRate;
 
+  // list of objects tha have to be removed
   ArrayList<GameObject> toBeRemovedObjects = new ArrayList<GameObject>();
+  // go through all game objects
   for(GameObject obj : allObjects) {
+    // simulate physics etc.
     obj.move(deltaTime);
+    // collect dead objects
     if (obj.markedAsDead) {
       toBeRemovedObjects.add(obj);
     }
   }
+  // remove the dead objects
   allObjects.removeAll(toBeRemovedObjects);
 }
 
@@ -432,9 +439,8 @@ void draw() {
   translate(xOrigin / worldScale, (height - yOrigin) / worldScale);  // move origin to correct position
 
   floor.draw(); 
-  // comet.draw();
-  // rocket.draw();
   
+  // draw all game objects
   for(GameObject obj : allObjects) {
     obj.draw();
   }
