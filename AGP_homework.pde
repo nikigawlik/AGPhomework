@@ -119,7 +119,7 @@ class Floor {
   }
 }
 
-class Button {
+abstract class Button {
   boolean isDown = false;
 
   int state = 0; // 0 = red, 1 = green
@@ -152,22 +152,16 @@ class Button {
   void mouseReleased() {
     if (isDown) {
       isDown = false;
-      performAction();
+      performAction(state);
+      increaseState();
     }
   }
 
-  protected void performAction() {
-    // decide on action
-    switch (state) {
-      case 0: // start
-        timeScale = baseTimeScale;
-      break;
-      case 1: // reset
-        teardownDynamic();
-        setupDynamic();
-      break;
-    }
+  protected void performAction(int currentState) {
+    // do nothing
+  }
 
+  private void increaseState() {
     // update state
     state = (state + 1) % 2; // increase state
   }
@@ -190,6 +184,31 @@ class Button {
   boolean checkBounds() {
     return mouseX >= x - currentImage().width/2 && mouseX < x + currentImage().width/2
     && mouseY >= y - currentImage().height/2 && mouseY < y + currentImage().height/2;
+  }
+}
+
+// button responsible for start and reset
+class StartButton extends Button {
+  StartButton() {
+    super(
+      120, 70, // x, y
+      new PImage[] {buttonGreenUp, buttonGreenDown, buttonRedUp, buttonRedDown}, // images
+      new String[] {"Start", "Reset"}, // label
+      -12, 8 // offset of text when normal and pressed
+      );
+  }
+
+  void performAction(int currentState) {
+    // do certain things based on state
+    switch (state) {
+      case 0: // start
+        timeScale = baseTimeScale;
+      break;
+      case 1: // reset
+        teardownDynamic();
+        setupDynamic();
+      break;
+    }
   }
 }
 
@@ -288,15 +307,7 @@ void setup() {
   setupDynamic();
   floor = new Floor(yOrigin / worldScale, markerHeight);
 
-  PImage[] images = new PImage[4];
-  images[0] = buttonGreenUp;
-  images[1] = buttonGreenDown;
-  images[2] = buttonRedUp;
-  images[3] = buttonRedDown;
-  String[] texts = new String[2];
-  texts[0] = "Start";
-  texts[1] = "Reset";
-  button = new Button(120, 70, images, texts, -12, 8);
+  button = new StartButton();
 }
 
 // set up dynamic objects
