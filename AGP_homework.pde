@@ -81,7 +81,7 @@ class GameObject {
 class Comet extends GameObject{
   float radius = 20*100; // 20 m, 100x scale
   Random rand = new Random();
-  float averageParticlesPerSecond = 2.0;
+  float averageParticlesPerSecond = 8.0;
 
   Comet(float x, float y, float impactAngle, float velocity) {
     super(x, y);
@@ -105,7 +105,12 @@ class Comet extends GameObject{
     float actualNumber = floor(numberOfParticles) 
       + (rand.nextFloat() < numberOfParticles - floor(numberOfParticles) ? 1 : 0);
     for(int i = 0; i < actualNumber; i++) {
-      new Particle(x + (rand.nextFloat() - 0.5) * 4*km, y + (rand.nextFloat() - 0.5) * 4*km, 5);
+      new Particle(
+        x + (rand.nextFloat() - 0.5) * 1.2 * radius, 
+        y + (rand.nextFloat() - 0.5) * 1.2 * radius, 
+        rand.nextFloat() * 10 + 1, // lifetime in s
+        rand.nextFloat() * radius * 2 // size of particles
+        );
     }
   }
   
@@ -152,13 +157,17 @@ class Floor {
 class Particle extends GameObject {
   PImage image;
   float lifetime;
+  float initialLifetime;
   float w = 1*km; // why not
   float h = 1*km;
 
-  Particle(float x, float y, float lifetime) {
+  Particle(float x, float y, float lifetime, float size) {
     super(x, y);
     image = particle;
     this.lifetime = lifetime;
+    initialLifetime = lifetime;
+    this.w = size;
+    this.h = size;
   }
 
   void move(float deltaTime) {
@@ -170,8 +179,8 @@ class Particle extends GameObject {
 
   void draw() {
     imageMode(CENTER);
-
-    image(image, x, y, w, h);
+    float s = max(lifetime / initialLifetime, 0);
+    image(image, x, y, w*s, h*s);
   }
 }
 
@@ -399,15 +408,12 @@ void setup() {
 void setupDynamic() {
   comet = new Comet(-120*km, 40*km, initialImpactAngle, initialVelocity);
   rocket = new Rocket(0*km, 0*km);
-
-  part = new Particle(20*km, 50*km, 5);
 }
 
 // tear down dynamic objects (for reset)
 void teardownDynamic() {
   comet.die();
   rocket.die();
-  part.die();
   timeScale = 0;
 }
 
