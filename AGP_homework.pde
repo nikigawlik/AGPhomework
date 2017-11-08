@@ -81,7 +81,7 @@ class GameObject {
 class Comet extends GameObject{
   float radius = 20*100; // 20 m, 100x scale
   Random rand = new Random();
-  float averageParticlesPerSecond = 8.0;
+  float averageParticlesPerSecond = 50.0;
 
   Comet(float x, float y, float impactAngle, float velocity) {
     super(x, y);
@@ -108,7 +108,7 @@ class Comet extends GameObject{
       new Particle(
         x + (rand.nextFloat() - 0.5) * 1.2 * radius, 
         y + (rand.nextFloat() - 0.5) * 1.2 * radius, 
-        rand.nextFloat() * 10 + 1, // lifetime in s
+        rand.nextFloat() * 8 + 1, // lifetime in s
         rand.nextFloat() * radius * 2 // size of particles
         );
     }
