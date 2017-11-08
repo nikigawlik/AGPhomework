@@ -5,6 +5,7 @@
  */
 
 import java.util.HashSet;
+import java.util.Random;
 
 // -- physical utility constants --
 final float km = 1000; // kilometer, in m
@@ -35,6 +36,7 @@ final float rocketLaunchSpeed = rocketLaunchSpeedMin * 2; // actual speed is 2 t
 
 // Set that contains all currently existing game objects
 HashSet<GameObject> allObjects = new HashSet<GameObject>();
+ArrayList<GameObject> newGameObjects = new ArrayList<GameObject>();
 
 // Parent class for physics objects
 class GameObject {
@@ -52,7 +54,7 @@ class GameObject {
     vY = 0;
 
     // add to global game object list
-    allObjects.add(this);
+    newGameObjects.add(this);
   }
 
   void die() {
@@ -78,7 +80,9 @@ class GameObject {
 // class that models and draws the comet
 class Comet extends GameObject{
   float radius = 20*100; // 20 m, 100x scale
-  
+  Random rand = new Random();
+  float averageParticlesPerSecond = 2.0;
+
   Comet(float x, float y, float impactAngle, float velocity) {
     super(x, y);
     vX = -cos(impactAngle) * velocity; // calculated initial velocity vector
@@ -94,6 +98,14 @@ class Comet extends GameObject{
       y = radius;
       vX = 0;
       vY = 0;
+    }
+
+    // some nice particles
+    float numberOfParticles = deltaTime * averageParticlesPerSecond;
+    float actualNumber = floor(numberOfParticles) 
+      + (rand.nextFloat() < numberOfParticles - floor(numberOfParticles) ? 1 : 0);
+    for(int i = 0; i < actualNumber; i++) {
+      new Particle(x + (rand.nextFloat() - 0.5) * 4*km, y + (rand.nextFloat() - 0.5) * 4*km, 5);
     }
   }
   
@@ -402,6 +414,10 @@ void teardownDynamic() {
 // called every frame before drawing
 void update() {
   float deltaTime = timeScale * 1.0 / frameRate;
+
+  // add any new objects
+  allObjects.addAll(newGameObjects);
+  newGameObjects.clear();
 
   // list of objects tha have to be removed
   ArrayList<GameObject> toBeRemovedObjects = new ArrayList<GameObject>();
