@@ -124,6 +124,33 @@ class Floor {
   }
 }
 
+class Particle extends GameObject {
+  PImage image;
+  float lifetime;
+  float w = 1*km; // why not
+  float h = 1*km;
+
+  Particle(float x, float y, float lifetime) {
+    super(x, y);
+    image = particle;
+    this.lifetime = lifetime;
+  }
+
+  void move(float deltaTime) {
+    if (lifetime < 0) {
+      // die();
+      // part = null;
+    }
+    lifetime -= deltaTime;
+  }
+
+  void draw() {
+    imageMode(CENTER);
+
+    image(image, x, y, w, h);
+  }
+}
+
 abstract class Button {
   boolean isDown = false;
 
@@ -283,6 +310,7 @@ PImage buttonGreenUp;
 PImage buttonGreenDown;
 PImage buttonRedUp;
 PImage buttonRedDown;
+PImage particle;
 
 // world
 float worldWidth; // width of world, in m
@@ -297,6 +325,7 @@ Floor floor;
 Rocket rocket;
 Button buttonStart;
 Button buttonLaunch;
+Particle part;
 
 void setup() {
   // display
@@ -320,6 +349,7 @@ void setup() {
   buttonGreenDown = loadImage("b_green_down.png");
   buttonRedUp = loadImage("b_red_up.png");
   buttonRedDown = loadImage("b_red_down.png");
+  particle = loadImage("particle.png");
   
   // generate image for background
   color c1 = #FAD723;
@@ -345,6 +375,8 @@ void setup() {
 void setupDynamic() {
   comet = new Comet(-120*km, 40*km, initialImpactAngle, initialVelocity);
   rocket = new Rocket(0*km, 0*km);
+
+  part = new Particle(20*km, 50*km, 5);
 }
 
 // tear down dynamic objects (for reset)
@@ -352,6 +384,7 @@ void teardownDynamic() {
   comet = null;
   rocket = null;
   timeScale = 0;
+  part = null;
 }
 
 // called every frame before drawing
@@ -384,6 +417,7 @@ void draw() {
   comet.draw();
   floor.draw(); 
   rocket.draw();
+  part.draw();
   
   // UI
   resetMatrix(); // reset back to screen space for UI
