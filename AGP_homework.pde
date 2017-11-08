@@ -3,7 +3,8 @@
  * @date 2017-10-25
  * @matrikelnummer 553449
  */
- 
+
+import java.util.HashSet;
 
 // -- physical utility constants --
 final float km = 1000; // kilometer, in m
@@ -32,19 +33,29 @@ final float initialVelocity = 32000 * kmH; // initial comet velocity, in m/s
 final float rocketLaunchSpeedMin = sqrt(2 * -gravityY * (markerHeight - 100*100));
 final float rocketLaunchSpeed = rocketLaunchSpeedMin * 2; // actual speed is 2 times that
 
+HashSet<GameObject> allObjects = new HashSet<GameObject>();
+
 // Parent class for physics objects
-abstract class GameObject {
+class GameObject {
   float x;
   float y;
   // verlocity in m/s:
   float vX;
   float vY;
+  public boolean markedAsDead = false;
 
   GameObject(float x, float y) {
-     this.x = x;
-     this.y = y;
-     vX = 0;
-     vY = 0;
+    this.x = x;
+    this.y = y;
+    vX = 0;
+    vY = 0;
+
+    // add to global list
+    allObjects.add(this);
+  }
+
+  void die() {
+    markedAsDead = true;
   }
   
   void move(float deltaTime) {
@@ -138,8 +149,7 @@ class Particle extends GameObject {
 
   void move(float deltaTime) {
     if (lifetime < 0) {
-      // die();
-      // part = null;
+      die();
     }
     lifetime -= deltaTime;
   }
@@ -381,17 +391,24 @@ void setupDynamic() {
 
 // tear down dynamic objects (for reset)
 void teardownDynamic() {
-  comet = null;
-  rocket = null;
+  comet.die();
+  rocket.die();
+  part.die();
   timeScale = 0;
-  part = null;
 }
 
 // called every frame before drawing
 void update() {
   float deltaTime = timeScale * 1.0 / frameRate;
-  comet.move(deltaTime);
-  rocket.move(deltaTime);
+
+  ArrayList<GameObject> toBeRemovedObjects = new ArrayList<GameObject>();
+  for(GameObject obj : allObjects) {
+    obj.move(deltaTime);
+    if (obj.markedAsDead) {
+      toBeRemovedObjects.add(obj);
+    }
+  }
+  allObjects.removeAll(toBeRemovedObjects);
 }
 
 void mouseReleased() {
@@ -414,10 +431,13 @@ void draw() {
   scale(worldScale, -worldScale); // scale and flip in y direction
   translate(xOrigin / worldScale, (height - yOrigin) / worldScale);  // move origin to correct position
 
-  comet.draw();
   floor.draw(); 
-  rocket.draw();
-  part.draw();
+  // comet.draw();
+  // rocket.draw();
+  
+  for(GameObject obj : allObjects) {
+    obj.draw();
+  }
   
   // UI
   resetMatrix(); // reset back to screen space for UI
