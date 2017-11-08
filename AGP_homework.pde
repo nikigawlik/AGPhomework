@@ -27,6 +27,11 @@ final float baseTimeScale = 1.0; // in s/s, time scale
 final float initialImpactAngle = radians(170); // initial comet impact angle relative to x axis, in radians
 final float initialVelocity = 32000 * kmH; // initial comet velocity, in m/s
 
+// rocket
+// calculate launch speed to reach the markerHeight (subtracting the rocket's height of 100 meters at 100x scale)
+final float rocketLaunchSpeedMin = sqrt(2 * -gravityY * (markerHeight - 100*100));
+final float rocketLaunchSpeed = rocketLaunchSpeedMin * 2; // actual speed is 2 times that
+
 // Parent class for physics objects
 abstract class GameObject {
   float x;
@@ -163,7 +168,7 @@ abstract class Button {
 
   private void increaseState() {
     // update state
-    state = (state + 1) % 2; // increase state
+    state = (state + 1) % texts.length; // increase state
   }
 
   void draw() {
@@ -193,7 +198,7 @@ class StartButton extends Button {
     super(
       120, 70, // x, y
       new PImage[] {buttonGreenUp, buttonGreenDown, buttonRedUp, buttonRedDown}, // images
-      new String[] {"Start", "Reset"}, // label
+      new String[] {"Start", "Reset"}, // labels
       -12, 8 // offset of text when normal and pressed
       );
   }
@@ -212,14 +217,38 @@ class StartButton extends Button {
   }
 }
 
+
+// button responsible for launching the rocket
+class LaunchButton extends Button {
+  LaunchButton() {
+    super(
+      320, 70, // x, y
+      new PImage[] {buttonGreenUp, buttonGreenDown}, // images
+      new String[] {"Launch"}, // label
+      -12, 8 // offset of text when normal and pressed
+      );
+  }
+
+  void performAction(int currentState) {
+    // independent of state (only one state exists)
+    // check if simulation is running and rocket not already launched
+    if (timeScale > 0 && !rocket.isLaunched) {
+      rocket.vY = rocketLaunchSpeed;
+      rocket.isLaunched = true;
+    }
+  }
+}
+
 // class that models and draws a rocket
 class Rocket extends GameObject {
   float h = 100*100; // rocket height (100x scale)
   float w = 20*100; // rocket width (100x scale)
   float cap = 20*100; // height of cap (100x scale)
+  boolean isLaunched;
   
   Rocket(float x, float y) {
     super(x, y);
+    isLaunched = false;
   }
 
   void move(float deltaTime) {
@@ -266,7 +295,8 @@ float worldBorderRight; // distance from origin to right border, in m
 Comet comet;
 Floor floor;
 Rocket rocket;
-Button button;
+Button buttonStart;
+Button buttonLaunch;
 
 void setup() {
   // display
@@ -307,7 +337,8 @@ void setup() {
   setupDynamic();
   floor = new Floor(yOrigin / worldScale, markerHeight);
 
-  button = new StartButton();
+  buttonStart = new StartButton();
+  buttonLaunch = new LaunchButton();
 }
 
 // set up dynamic objects
@@ -331,11 +362,13 @@ void update() {
 }
 
 void mouseReleased() {
-  button.mouseReleased();
+  buttonStart.mouseReleased();
+  buttonLaunch.mouseReleased();
 }
 
 void mousePressed() {
-  button.mousePressed();
+  buttonStart.mousePressed();
+  buttonLaunch.mousePressed();
 }
  
 void draw() {
@@ -355,5 +388,6 @@ void draw() {
   // UI
   resetMatrix(); // reset back to screen space for UI
   
-  button.draw();
+  buttonStart.draw();
+  buttonLaunch.draw();
 }
