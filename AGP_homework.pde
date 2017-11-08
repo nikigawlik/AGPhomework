@@ -27,56 +27,73 @@ final float baseTimeScale = 1.0; // in s/s, time scale
 final float initialImpactAngle = radians(170); // initial comet impact angle relative to x axis, in radians
 final float initialVelocity = 32000 * kmH; // initial comet velocity, in m/s
 
-// class that models and draws the comet
-class Comet {
-   float x;
-   float y;
-   float radius = 20*100; // 20 m, 100x scale
-   // verlocity in m/s:
-   float vX;
-   float vY;
-   
-   Comet(float x, float y, float impactAngle, float velocity) {
+// Parent class for physics objects
+abstract class GameObject {
+  float x;
+  float y;
+  // verlocity in m/s:
+  float vX;
+  float vY;
+
+  GameObject(float x, float y) {
      this.x = x;
      this.y = y;
-     vX = -cos(impactAngle) * velocity; // calculated initial velocity vector
-     vY = -sin(impactAngle) * velocity;
-   }
+     vX = 0;
+     vY = 0;
+  }
+  
+  void move(float deltaTime) {
+    // update position accounting for velocity and gravity
+    x += vX * deltaTime + 0.5 * gravityX * pow(deltaTime, 2);
+    y += vY * deltaTime + 0.5 * gravityY * pow(deltaTime, 2);
 
-   // move the comet, deltaTime = time passed since last update, in s
-   void move(float deltaTime) {
+    // update and remember velocity for next iteration
+    vX += gravityX * deltaTime;
+    vY += gravityY * deltaTime;
+  }
 
-     // update position accounting for velocity and gravity
-     x += vX * deltaTime + 0.5 * gravityX * pow(deltaTime, 2);
-     y += vY * deltaTime + 0.5 * gravityY * pow(deltaTime, 2);
+  void draw() {
+    // do nothing
+  }
+}
 
-     // update and remember velocity for next iteration
-     vX += gravityX * deltaTime;
-     vY += gravityY * deltaTime;
+// class that models and draws the comet
+class Comet extends GameObject{
+  float radius = 20*100; // 20 m, 100x scale
+  
+  Comet(float x, float y, float impactAngle, float velocity) {
+    super(x, y);
+    vX = -cos(impactAngle) * velocity; // calculated initial velocity vector
+    vY = -sin(impactAngle) * velocity;
+  }
 
-     // handle collision with ground
-     if (y < radius) {
-       y = radius;
-       vX = 0;
-       vY = 0;
-     }
-   }
-   
-   void draw() {
-     // draw circle
-     fill(255);
-     ellipse(x, y, radius*2, radius*2);
-     // draw impact arc (simplified: line)
-     float distanceTillImpact = vX/vY * -y; // helper variable
-     stroke(255);
-     strokeWeight(200);
-     line(x, y, x + distanceTillImpact, 0);
-     
-     // draw velocity vector
-     stroke(255);
-     strokeWeight(400);
-     line(x, y, x + vX, y + vY);
-   }
+  // move the comet, deltaTime = time passed since last update, in s
+  void move(float deltaTime) {
+    // handle movement in parent object
+    super.move(deltaTime);
+    // handle collision with ground
+    if (y < radius) {
+      y = radius;
+      vX = 0;
+      vY = 0;
+    }
+  }
+  
+  void draw() {
+    // draw circle
+    fill(255);
+    ellipse(x, y, radius*2, radius*2);
+    // draw impact arc (simplified: line)
+    float distanceTillImpact = vX/vY * -y; // helper variable
+    stroke(255);
+    strokeWeight(200);
+    line(x, y, x + distanceTillImpact, 0);
+    
+    // draw velocity vector
+    stroke(255);
+    strokeWeight(400);
+    line(x, y, x + vX, y + vY);
+  }
 }
 
 // class that draws the floor and other environmental things
@@ -177,22 +194,26 @@ class Button {
 }
 
 // class that models and draws a rocket
-class Rocket {
-  float x;
-  float y;
+class Rocket extends GameObject {
   float h = 100*100; // rocket height (100x scale)
   float w = 20*100; // rocket width (100x scale)
   float cap = 20*100; // height of cap (100x scale)
   
   Rocket(float x, float y) {
-    this.x = x;
-    this.y = y + h/2; // offset
+    super(x, y);
   }
 
   void move(float deltaTime) {
-    // do nothing for now
+    // handle movement in parent object
+    super.move(deltaTime);
+    // handle collision with ground
+    if (y < h/2) {
+      y = h/2;
+      vX = 0;
+      vY = 0;
+    }
   }
-  
+
   void draw() {
     pushMatrix();
 
