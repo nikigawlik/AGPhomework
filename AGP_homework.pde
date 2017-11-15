@@ -4,8 +4,8 @@
  * @matrikelnummer 553449
  */
 
-import java.util.HashSet;
-import java.util.Random;
+ import java.util.HashSet;
+
 
 // -- physical utility constants --
 final float km = 1000; // kilometer, in m
@@ -27,7 +27,9 @@ final float baseTimeScale = 1.0; // in s/s, time scale
 
 // comet
 final float initialImpactAngle = radians(170); // initial comet impact angle relative to x axis, in radians
+final float initialImpactAngleVariance = 0.1;
 final float initialVelocity = 32000 * kmH; // initial comet velocity, in m/s
+final float initialVelocityVariance = 0.1;
 
 // rocket
 // calculate launch speed to reach the markerHeight (subtracting the rocket's height of 100 meters at 100x scale)
@@ -80,7 +82,6 @@ class GameObject {
 // class that models and draws the comet
 class Comet extends GameObject{
   float radius = 20*100; // 20 m, 100x scale
-  Random rand = new Random();
   float averageParticlesPerSecond = 50.0;
 
   Comet(float x, float y, float impactAngle, float velocity) {
@@ -103,13 +104,13 @@ class Comet extends GameObject{
     // some nice particles
     float numberOfParticles = deltaTime * averageParticlesPerSecond;
     float actualNumber = floor(numberOfParticles) 
-      + (rand.nextFloat() < numberOfParticles - floor(numberOfParticles) ? 1 : 0);
+      + (random(1.0) < numberOfParticles - floor(numberOfParticles) ? 1 : 0);
     for(int i = 0; i < actualNumber; i++) {
       new Particle(
-        x + (rand.nextFloat() - 0.5) * 1.2 * radius, 
-        y + (rand.nextFloat() - 0.5) * 1.2 * radius, 
-        rand.nextFloat() * 8 + 1, // lifetime in s
-        rand.nextFloat() * radius * 2 // size of particles
+        x + (random(1.0) - 0.5) * 1.2 * radius, 
+        y + (random(1.0) - 0.5) * 1.2 * radius, 
+        random(1.0) * 8 + 1, // lifetime in s
+        random(1.0) * radius * 2 // size of particles
         );
     }
   }
@@ -406,7 +407,12 @@ void setup() {
 
 // set up dynamic objects
 void setupDynamic() {
-  comet = new Comet(-120*km, 40*km, initialImpactAngle, initialVelocity);
+  // calculate randomized velocity and angle
+  float impactAngle = initialImpactAngle;
+  impactAngle += impactAngle * random(-1, 1) * initialImpactAngleVariance;
+  float velocity = initialVelocity;
+  velocity += velocity * random(-1, 1) * initialVelocityVariance;
+  comet = new Comet(-120*km, 40*km, impactAngle, velocity);
   rocket = new Rocket(0*km, 0*km);
 }
 
