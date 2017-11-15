@@ -420,6 +420,19 @@ void setupDynamic() {
 void teardownDynamic() {
   comet.die();
   rocket.die();
+  // remove all Particles
+  for (GameObject obj : allObjects) {
+    if (obj instanceof Particle) {
+      obj.die();
+    }
+  }
+  // also new instances
+  for (GameObject obj : newGameObjects) {
+    if (obj instanceof Particle) {
+      obj.die();
+    }
+  }
+  // stop time again
   timeScale = 0;
 }
 
