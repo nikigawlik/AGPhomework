@@ -19,7 +19,7 @@ final float gravityY = -9.81; // in m/s
 
 // origin of world on screen
 final float xOrigin = 500; // in px
-final float yOrigin = 700; // in px
+final float yOrigin = 650; // in px
 
 final float baseWorldHeight = 200 * km; // in m, height of the displayed world
 final float markerHeight = 30 * km; // in m, height of horizontal marker line
@@ -300,6 +300,62 @@ class LaunchButton extends Button {
   }
 }
 
+class Slider {
+  float x;
+  float y;
+  PImage backgroundImage;
+  PImage knobImage;
+  float knobX;
+  boolean isDown;
+  float value;
+  
+  Slider(float x, float y, PImage backgroundImage, PImage knobImage) {
+    this.x = x; 
+    this.y = y; 
+    knobX = x;
+    this.backgroundImage = backgroundImage; 
+    this.knobImage = knobImage;
+    value = 0.0;
+  }
+  
+  void mousePressed() {
+    if (checkBounds()) {
+      isDown = true;
+    }
+  }
+
+  void mouseReleased() {
+    if (isDown) {
+      isDown = false;
+    }
+  }
+
+  void update() {
+    if (isDown) {
+      // set the knob on the slider and constrain it to not leave the slider dimensions
+      float maxKnobOffset = backgroundImage.width / 2 - knobImage.width / 2;
+      knobX = constrain(mouseX, x - maxKnobOffset, x + maxKnobOffset);
+      // normalize the output value to [-1, 1]
+      value = (knobX - x) / maxKnobOffset;
+    }
+  }
+
+  boolean checkBounds() {
+    return mouseX >= x - backgroundImage.width/2 && mouseX < x + backgroundImage.width/2
+    && mouseY >= y - backgroundImage.height/2 && mouseY < y + backgroundImage.height/2;
+  }
+
+  void draw() {
+    image(backgroundImage, x, y);
+    image(knobImage, knobX, y);
+    // draw value
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(33);
+    text(value, x, y + backgroundImage.height / 2 + 18);
+  }
+}
+
 // class that models and draws a rocket
 class Rocket extends GameObject {
   float h = 100*100; // rocket height (100x scale)
@@ -345,6 +401,8 @@ PImage buttonGreenDown;
 PImage buttonRedUp;
 PImage buttonRedDown;
 PImage particle;
+PImage sliderBack;
+PImage sliderFront;
 
 // world
 float worldWidth; // width of world, in m
@@ -359,6 +417,7 @@ Floor floor;
 Rocket rocket;
 Button buttonStart;
 Button buttonLaunch;
+Slider rocketSlider;
 Particle part;
 
 void setup() {
@@ -384,6 +443,8 @@ void setup() {
   buttonRedUp = loadImage("b_red_up.png");
   buttonRedDown = loadImage("b_red_down.png");
   particle = loadImage("particle.png");
+  sliderBack = loadImage("sliderBack.png");
+  sliderFront = loadImage("sliderFront.png");
   
   // generate image for background
   color c1 = #FAD723;
@@ -403,6 +464,7 @@ void setup() {
 
   buttonStart = new StartButton();
   buttonLaunch = new LaunchButton();
+  rocketSlider = new Slider(width/2, height - 100, sliderBack, sliderFront);
 }
 
 // set up dynamic objects
@@ -457,16 +519,21 @@ void update() {
   }
   // remove the dead objects
   allObjects.removeAll(toBeRemovedObjects);
+
+  // update UI
+  rocketSlider.update();
 }
 
 void mouseReleased() {
   buttonStart.mouseReleased();
   buttonLaunch.mouseReleased();
+  rocketSlider.mouseReleased();
 }
 
 void mousePressed() {
   buttonStart.mousePressed();
   buttonLaunch.mousePressed();
+  rocketSlider.mousePressed();
 }
  
 void draw() {
@@ -491,4 +558,5 @@ void draw() {
   
   buttonStart.draw();
   buttonLaunch.draw();
+  rocketSlider.draw();
 }
