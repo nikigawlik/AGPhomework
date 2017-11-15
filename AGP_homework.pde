@@ -308,14 +308,18 @@ class Slider {
   float knobX;
   boolean isDown;
   float value;
+  float valueScaling;
+  String postfix;
   
-  Slider(float x, float y, PImage backgroundImage, PImage knobImage) {
+  Slider(float x, float y, PImage backgroundImage, PImage knobImage, float valueScaling, String postfix) {
     this.x = x; 
     this.y = y; 
     knobX = x;
     this.backgroundImage = backgroundImage; 
     this.knobImage = knobImage;
     value = 0.0;
+    this.valueScaling = valueScaling;
+    this.postfix = postfix;
   }
   
   void mousePressed() {
@@ -336,7 +340,7 @@ class Slider {
       float maxKnobOffset = backgroundImage.width / 2 - knobImage.width / 2;
       knobX = constrain(mouseX, x - maxKnobOffset, x + maxKnobOffset);
       // normalize the output value to [-1, 1]
-      value = (knobX - x) / maxKnobOffset;
+      value = (knobX - x) / maxKnobOffset * valueScaling;
     }
   }
 
@@ -352,7 +356,7 @@ class Slider {
     fill(255);
     textAlign(CENTER, CENTER);
     textSize(33);
-    text(value, x, y + backgroundImage.height / 2 + 18);
+    text(nf(value, 1, 1) + postfix, x, y + backgroundImage.height / 2 + 18);
   }
 }
 
@@ -464,7 +468,7 @@ void setup() {
 
   buttonStart = new StartButton();
   buttonLaunch = new LaunchButton();
-  rocketSlider = new Slider(width/2, height - 100, sliderBack, sliderFront);
+  rocketSlider = new Slider(width/2, height - 100, sliderBack, sliderFront, 20.0, " °");
 }
 
 // set up dynamic objects
