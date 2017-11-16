@@ -385,6 +385,7 @@ class Rocket extends GameObject {
     // handle collision with ground
     if (y < h/2) {
       y = h/2;
+      vX = 0;
       vY = 0;
     }
 
