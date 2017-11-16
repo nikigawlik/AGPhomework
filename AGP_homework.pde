@@ -23,7 +23,7 @@ final float yOrigin = 650; // in px
 
 final float baseWorldHeight = 200 * km; // in m, height of the displayed world
 final float markerHeight = 30 * km; // in m, height of horizontal marker line
-final float baseTimeScale = 1.0; // in s/s, time scale
+final float baseTimeScale = 2.0; // in s/s, time scale
 
 // comet
 final float initialImpactAngle = radians(170); // initial comet impact angle relative to x axis, in radians
@@ -294,8 +294,7 @@ class LaunchButton extends Button {
     // independent of state (only one state exists)
     // check if simulation is running and rocket not already launched
     if (timeScale > 0 && !rocket.isLaunched) {
-      rocket.vY = rocketLaunchSpeed;
-      rocket.isLaunched = true;
+      rocket.launch();
     }
   }
 }
@@ -366,10 +365,18 @@ class Rocket extends GameObject {
   float w = 20*100; // rocket width (100x scale)
   float cap = 20*100; // height of cap (100x scale)
   boolean isLaunched;
+  float rotation; // rocket's rotation in radians, 0 is rocket pointing right
   
-  Rocket(float x, float y) {
+  Rocket(float x, float y, float rotation) {
     super(x, y);
     isLaunched = false;
+    this.rotation = rotation;
+  }
+
+  void launch() {
+    rocket.isLaunched = true;
+    rocket.vX = cos(rotation) * rocketLaunchSpeed;
+    rocket.vY = sin(rotation) * rocketLaunchSpeed;
   }
 
   void move(float deltaTime) {
@@ -378,8 +385,14 @@ class Rocket extends GameObject {
     // handle collision with ground
     if (y < h/2) {
       y = h/2;
-      vX = 0;
       vY = 0;
+    }
+
+    // handle rotation
+    if (!isLaunched) {
+      rotation = radians(rocketSlider.value) + PI/2; // set proper rotation
+    } else {
+      rotation = atan2(vY, vX);
     }
   }
 
@@ -387,6 +400,8 @@ class Rocket extends GameObject {
     pushMatrix();
 
     translate(x, y); // translation to simplify calculations below
+    rotate(rotation); // apply rotation
+    rotate(-PI/2); // counteract the fact that the following lines assume an upright rocket
     // calculate and draw the rocket parts
     strokeWeight(0);
     fill(0);
@@ -479,7 +494,7 @@ void setupDynamic() {
   float velocity = initialVelocity;
   velocity += velocity * random(-1, 1) * initialVelocityVariance;
   comet = new Comet(-120*km, 40*km, impactAngle, velocity);
-  rocket = new Rocket(0*km, 0*km);
+  rocket = new Rocket(0*km, 0*km, PI/2.0);
 }
 
 // tear down dynamic objects (for reset)
