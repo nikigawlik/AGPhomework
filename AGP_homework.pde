@@ -119,11 +119,12 @@ class Comet extends GameObject{
     // draw circle
     fill(255);
     ellipse(x, y, radius*2, radius*2);
-    // draw impact arc (simplified: line)
-    float distanceTillImpact = vX/vY * -y; // helper variable
-    stroke(255);
-    strokeWeight(200);
-    line(x, y, x + distanceTillImpact, 0);
+    
+    // // draw impact arc (simplified: line)
+    // float distanceTillImpact = vX/vY * -y; // helper variable
+    // stroke(255);
+    // strokeWeight(200);
+    // line(x, y, x + distanceTillImpact, 0);
     
     // draw velocity vector
     stroke(255);
