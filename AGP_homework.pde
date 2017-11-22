@@ -38,9 +38,8 @@ final float rocketLaunchSpeed = rocketLaunchSpeedMin * 2; // actual speed is 2 t
 // minimum distance for rocket and comet to count as collision
 final float rocketCometCollisionDistance = 120; // in m
 
-// Set that contains all currently existing game objects
-HashSet<GameObject> allObjects = new HashSet<GameObject>();
-ArrayList<GameObject> newGameObjects = new ArrayList<GameObject>();
+
+/** classes **/
 
 // Parent class for physics objects
 class GameObject {
@@ -131,273 +130,6 @@ class Comet extends GameObject{
     stroke(255);
     strokeWeight(400);
     line(x, y, x + vX, y + vY);
-  }
-}
-
-// class that draws the floor and other environmental things
-class Floor {
-  float thickness; // thickness of the floor
-  float markerHeight; // height of the marking line (height at which the comet should be shot)
-  
-  Floor(float thickness, float markerHeight) {
-    this.thickness = thickness;
-    this.markerHeight = markerHeight;
-  }
-  
-  void draw() {
-    // draw ground
-    fill(0);
-    strokeWeight(0);
-    rect(worldBorderLeft, -thickness, worldWidth, thickness);
-   
-    // draw marker line
-    fill(0);
-    strokeWeight(100);
-    line(worldBorderLeft, markerHeight, worldWidth, markerHeight);
-  }
-}
-
-class Particle extends GameObject {
-  PImage image;
-  float lifetime;
-  float initialLifetime;
-  float w = 1*km; // why not
-  float h = 1*km;
-
-  Particle(float x, float y, float lifetime, float size) {
-    super(x, y);
-    image = particle;
-    this.lifetime = lifetime;
-    initialLifetime = lifetime;
-    this.w = size;
-    this.h = size;
-  }
-
-  void move(float deltaTime) {
-    if (lifetime < 0) {
-      die();
-    }
-    lifetime -= deltaTime;
-
-    super.move(deltaTime);
-  }
-
-  void draw() {
-    imageMode(CENTER);
-    float s = max(lifetime / initialLifetime, 0);
-    image(image, x, y, w*s, h*s);
-  }
-}
-
-abstract class Button {
-  boolean isDown = false;
-
-  int state = 0; // 0 = red, 1 = green
-  int numberOfStates = 2;
-
-  PImage[] images; // images for the states, alternating eween up and down position
-  String[] texts;
-  float downOffset; // offset when the button is down
-
-  float textOffsetY; // normal offset
-
-  float x;
-  float y;
-
-  Button(float x, float y, PImage[] images, String[] texts, float textOffsetY, float downOffset) {
-    this.x = x;
-    this.y = y;
-    this.images = images;
-    this.texts = texts;
-    this.textOffsetY = textOffsetY;
-    this.downOffset = downOffset;
-  }
-
-  void mousePressed() {
-    if (checkBounds()) {
-      isDown = true;
-    }
-  }
-
-  void mouseReleased() {
-    if (isDown) {
-      isDown = false;
-      performAction(state);
-      increaseState();
-    }
-  }
-
-  protected void performAction(int currentState) {
-    // do nothing
-  }
-
-  private void increaseState() {
-    // update state
-    state = (state + 1) % texts.length; // increase state
-  }
-
-  void draw() {
-    imageMode(CENTER);
-    image(currentImage(), x, y);
-    if (texts != null && state < texts.length) {
-      fill(255);
-      textAlign(CENTER, CENTER);
-      textSize(33);
-      text(texts[state], x, y + textOffsetY + (isDown? downOffset : 0));
-    }
-  }
-
-  PImage currentImage() {
-    return isDown? images[state * 2 + 1] : images[state * 2]; // pick odd images for down, even for up
-  }
-
-  boolean checkBounds() {
-    return mouseX >= x - currentImage().width/2 && mouseX < x + currentImage().width/2
-    && mouseY >= y - currentImage().height/2 && mouseY < y + currentImage().height/2;
-  }
-}
-
-// button responsible for start and reset
-class StartButton extends Button {
-  StartButton() {
-    super(
-      120, 70, // x, y
-      new PImage[] {buttonGreenUp, buttonGreenDown, buttonRedUp, buttonRedDown}, // images
-      new String[] {"Start", "Reset"}, // labels
-      -12, 8 // offset of text when normal and pressed
-      );
-  }
-
-  void performAction(int currentState) {
-    // do certain things based on state
-    switch (state) {
-      case 0: // start
-        timeScale = baseTimeScale;
-        start();
-      break;
-      case 1: // reset
-        teardownDynamic();
-        setupDynamic();
-      break;
-    }
-  }
-
-  // start the game
-  void start() {
-    rocketSlider.setLocked(true);
-    rocket.primeLaunchTimer();
-  }
-}
-
-
-// button responsible for launching the rocket
-class LaunchButton extends Button {
-  LaunchButton() {
-    super(
-      320, 70, // x, y
-      new PImage[] {buttonGreenUp, buttonGreenDown}, // images
-      new String[] {"Launch"}, // label
-      -12, 8 // offset of text when normal and pressed
-      );
-  }
-
-  void performAction(int currentState) {
-    // independent of state (only one state exists)
-    // check if simulation is running and rocket not already launched
-    if (timeScale > 0 && !rocket.isLaunched) {
-      rocket.launch();
-    }
-  }
-
-  void draw() {
-    super.draw();
-
-    // draw countdown
-    String str;
-
-    if (rocket.launchTimer >= 0 && rocket.launchTimer <= 10) {
-      int seconds = (int) rocket.launchTimer;
-      int tenths = (int) ((rocket.launchTimer - floor(rocket.launchTimer)) * 10);
-      str = nf(seconds, 2, 0) + ":" + nf(tenths, 1, 0);
-    } else if(rocket.isLaunched) {
-      str = "BLASTOFF";
-    } else {
-      str = "XX:X";
-    }
-
-    fill(255);
-    textAlign(LEFT, CENTER);
-    textSize(33);
-    text(str, x + 120, y);
-  }
-}
-
-class Slider {
-  float x;
-  float y;
-  PImage backgroundImage;
-  PImage knobImage;
-  float knobX;
-  boolean isDown;
-  float value;
-  float valueScaling;
-  String postfix;
-  boolean locked;
-  
-  Slider(float x, float y, PImage backgroundImage, PImage knobImage, float valueScaling, String postfix) {
-    this.x = x; 
-    this.y = y; 
-    knobX = x;
-    this.backgroundImage = backgroundImage; 
-    this.knobImage = knobImage;
-    value = 0.0;
-    this.valueScaling = valueScaling;
-    this.postfix = postfix;
-    locked = false;
-  }
-
-  void setLocked(boolean locked) {
-    this.locked = locked;
-    if (locked == true) {
-      isDown = false;
-    }
-  }
-  
-  void mousePressed() {
-    if (checkBounds() && !locked) {
-      isDown = true;
-    }
-  }
-
-  void mouseReleased() {
-    if (isDown) {
-      isDown = false;
-    }
-  }
-
-  void update() {
-    if (isDown) {
-      // set the knob on the slider and constrain it to not leave the slider dimensions
-      float maxKnobOffset = backgroundImage.width / 2 - knobImage.width / 2;
-      knobX = constrain(mouseX, x - maxKnobOffset, x + maxKnobOffset);
-      // normalize the output value to [-1, 1]
-      value = (knobX - x) / maxKnobOffset * valueScaling;
-    }
-  }
-
-  boolean checkBounds() {
-    return mouseX >= x - backgroundImage.width/2 && mouseX < x + backgroundImage.width/2
-    && mouseY >= y - backgroundImage.height/2 && mouseY < y + backgroundImage.height/2;
-  }
-
-  void draw() {
-    image(backgroundImage, x, y);
-    image(knobImage, knobX, y);
-    // draw value
-    fill(255);
-    textAlign(CENTER, CENTER);
-    textSize(33);
-    text(nf(value, 1, 1) + postfix, x, y + backgroundImage.height / 2 + 18);
   }
 }
 
@@ -564,6 +296,278 @@ class Rocket extends GameObject {
   }
 }
 
+// class that draws the floor and other environmental things
+class Floor {
+  float thickness; // thickness of the floor
+  float markerHeight; // height of the marking line -> height at which the comet should be shot
+  
+  Floor(float thickness, float markerHeight) {
+    this.thickness = thickness;
+    this.markerHeight = markerHeight;
+  }
+  
+  void draw() {
+    // draw ground
+    fill(0);
+    strokeWeight(0);
+    rect(worldBorderLeft, -thickness, worldWidth, thickness);
+   
+    // draw marker line
+    fill(0);
+    strokeWeight(100);
+    line(worldBorderLeft, markerHeight, worldWidth, markerHeight);
+  }
+}
+
+// smoke particle for explosions and other effects
+class Particle extends GameObject {
+  PImage image;
+  float lifetime;
+  float initialLifetime;
+  float w = 1*km; // why not
+  float h = 1*km;
+
+  Particle(float x, float y, float lifetime, float size) {
+    super(x, y);
+    image = particle;
+    this.lifetime = lifetime;
+    initialLifetime = lifetime;
+    this.w = size;
+    this.h = size;
+  }
+
+  void move(float deltaTime) {
+    if (lifetime < 0) {
+      die();
+    }
+    lifetime -= deltaTime;
+
+    super.move(deltaTime);
+  }
+
+  void draw() {
+    imageMode(CENTER);
+    float s = max(lifetime / initialLifetime, 0);
+    image(image, x, y, w*s, h*s);
+  }
+}
+
+// parent class for buttons to inherit, supports multiple states to switch between
+abstract class Button {
+  boolean isDown = false;
+
+  int state = 0; // 0 = red, 1 = green
+  int numberOfStates = 2;
+
+  PImage[] images; // images for the states, alternating eween up and down position
+  String[] texts;
+  float downOffset; // offset when the button is down
+
+  float textOffsetY; // normal offset
+
+  float x;
+  float y;
+
+  Button(float x, float y, PImage[] images, String[] texts, float textOffsetY, float downOffset) {
+    this.x = x;
+    this.y = y;
+    this.images = images;
+    this.texts = texts;
+    this.textOffsetY = textOffsetY;
+    this.downOffset = downOffset;
+  }
+
+  void mousePressed() {
+    if (checkBounds()) {
+      isDown = true;
+    }
+  }
+
+  void mouseReleased() {
+    if (isDown) {
+      isDown = false;
+      performAction(state);
+      increaseState();
+    }
+  }
+
+  protected void performAction(int currentState) {
+    // do nothing
+  }
+
+  private void increaseState() {
+    // update state
+    state = (state + 1) % texts.length; // increase state
+  }
+
+  void draw() {
+    imageMode(CENTER);
+    image(currentImage(), x, y);
+    if (texts != null && state < texts.length) {
+      fill(255);
+      textAlign(CENTER, CENTER);
+      textSize(33);
+      text(texts[state], x, y + textOffsetY + (isDown? downOffset : 0));
+    }
+  }
+
+  PImage currentImage() {
+    return isDown? images[state * 2 + 1] : images[state * 2]; // pick odd images for down, even for up
+  }
+
+  boolean checkBounds() {
+    return mouseX >= x - currentImage().width/2 && mouseX < x + currentImage().width/2
+    && mouseY >= y - currentImage().height/2 && mouseY < y + currentImage().height/2;
+  }
+}
+
+// button responsible for start and reset
+class StartButton extends Button {
+  StartButton() {
+    super(
+      120, 70, // x, y
+      new PImage[] {buttonGreenUp, buttonGreenDown, buttonRedUp, buttonRedDown}, // images
+      new String[] {"Start", "Reset"}, // labels
+      -12, 8 // offset of text when normal and pressed
+      );
+  }
+
+  void performAction(int currentState) {
+    // do certain things based on state
+    switch (state) {
+      case 0: // start
+        timeScale = baseTimeScale;
+        start();
+      break;
+      case 1: // reset
+        teardownDynamic();
+        setupDynamic();
+      break;
+    }
+  }
+
+  // start the game
+  void start() {
+    rocketSlider.setLocked(true);
+    rocket.primeLaunchTimer();
+  }
+}
+
+
+// button responsible for launching the rocket
+class LaunchButton extends Button {
+  LaunchButton() {
+    super(
+      320, 70, // x, y
+      new PImage[] {buttonGreenUp, buttonGreenDown}, // images
+      new String[] {"Launch"}, // label
+      -12, 8 // offset of text when normal and pressed
+      );
+  }
+
+  void performAction(int currentState) {
+    // independent of state (only one state exists)
+    // check if simulation is running and rocket not already launched
+    if (timeScale > 0 && !rocket.isLaunched) {
+      rocket.launch();
+    }
+  }
+
+  void draw() {
+    super.draw();
+
+    // draw countdown
+    String str;
+
+    if (rocket.launchTimer >= 0 && rocket.launchTimer <= 10) {
+      int seconds = (int) rocket.launchTimer;
+      int tenths = (int) ((rocket.launchTimer - floor(rocket.launchTimer)) * 10);
+      str = nf(seconds, 2, 0) + ":" + nf(tenths, 1, 0);
+    } else if(rocket.isLaunched) {
+      str = "BLASTOFF";
+    } else {
+      str = "XX:X";
+    }
+
+    fill(255);
+    textAlign(LEFT, CENTER);
+    textSize(33);
+    text(str, x + 120, y);
+  }
+}
+
+// a slider for user input of a value
+class Slider {
+  float x;
+  float y;
+  PImage backgroundImage;
+  PImage knobImage;
+  float knobX;
+  boolean isDown;
+  float value;
+  float valueScaling;
+  String postfix;
+  boolean locked;
+  
+  Slider(float x, float y, PImage backgroundImage, PImage knobImage, float valueScaling, String postfix) {
+    this.x = x; 
+    this.y = y; 
+    knobX = x;
+    this.backgroundImage = backgroundImage; 
+    this.knobImage = knobImage;
+    value = 0.0;
+    this.valueScaling = valueScaling;
+    this.postfix = postfix;
+    locked = false;
+  }
+
+  void setLocked(boolean locked) {
+    this.locked = locked;
+    if (locked == true) {
+      isDown = false;
+    }
+  }
+  
+  void mousePressed() {
+    if (checkBounds() && !locked) {
+      isDown = true;
+    }
+  }
+
+  void mouseReleased() {
+    if (isDown) {
+      isDown = false;
+    }
+  }
+
+  void update() {
+    if (isDown) {
+      // set the knob on the slider and constrain it to not leave the slider dimensions
+      float maxKnobOffset = backgroundImage.width / 2 - knobImage.width / 2;
+      knobX = constrain(mouseX, x - maxKnobOffset, x + maxKnobOffset);
+      // normalize the output value to [-1, 1]
+      value = (knobX - x) / maxKnobOffset * valueScaling;
+    }
+  }
+
+  boolean checkBounds() {
+    return mouseX >= x - backgroundImage.width/2 && mouseX < x + backgroundImage.width/2
+    && mouseY >= y - backgroundImage.height/2 && mouseY < y + backgroundImage.height/2;
+  }
+
+  void draw() {
+    image(backgroundImage, x, y);
+    image(knobImage, knobX, y);
+    // draw value
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(33);
+    text(nf(value, 1, 1) + postfix, x, y + backgroundImage.height / 2 + 18);
+  }
+}
+
+/** global vairables **/
+
 // images
 PImage backgroundImage;
 PImage buttonGreenUp;
@@ -582,13 +586,23 @@ float timeScale; // time scale, in s/s
 float worldBorderLeft; // distance from origin to left border, in m
 float worldBorderRight; // distance from origin to right border, in m
 
+
+// Set that contains all currently existing game objects
+HashSet<GameObject> allObjects = new HashSet<GameObject>();
+ArrayList<GameObject> newGameObjects = new ArrayList<GameObject>();
+
+// special objects to be rememberd
 Comet comet;
 Floor floor;
 Rocket rocket;
+
+// UI objects
 Button buttonStart;
 Button buttonLaunch;
 Slider rocketSlider;
-Particle part;
+
+
+/** top level control functions **/
 
 void setup() {
   // display
@@ -695,12 +709,14 @@ void update() {
   rocketSlider.update();
 }
 
+// passes on mouse events to UI
 void mouseReleased() {
   buttonStart.mouseReleased();
   buttonLaunch.mouseReleased();
   rocketSlider.mouseReleased();
 }
 
+// passes on mouse events to UI
 void mousePressed() {
   buttonStart.mousePressed();
   buttonLaunch.mousePressed();
