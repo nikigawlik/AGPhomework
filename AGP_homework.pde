@@ -144,15 +144,15 @@ class Floor {
   }
   
   void draw() {
-   // draw ground
-   fill(0);
-   strokeWeight(0);
-   rect(worldBorderLeft, -thickness, worldWidth, thickness);
+    // draw ground
+    fill(0);
+    strokeWeight(0);
+    rect(worldBorderLeft, -thickness, worldWidth, thickness);
    
-   // draw marker line
-   fill(0);
-   strokeWeight(100);
-   line(worldBorderLeft, markerHeight, worldWidth, markerHeight);
+    // draw marker line
+    fill(0);
+    strokeWeight(100);
+    line(worldBorderLeft, markerHeight, worldWidth, markerHeight);
   }
 }
 
@@ -678,6 +678,12 @@ void draw() {
   // UI
   resetMatrix(); // reset back to screen space for UI
   
+  // draw general info
+  fill(255);
+  textAlign(RIGHT, TOP);
+  textSize(16);
+  text("time scale: " + nf(timeScale, 2, 2), width - 16, 16);
+
   buttonStart.draw();
   buttonLaunch.draw();
   rocketSlider.draw();
