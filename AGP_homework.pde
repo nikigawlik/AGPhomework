@@ -284,61 +284,10 @@ class StartButton extends Button {
     }
   }
 
+  // start the game
   void start() {
-    // calculate rocket start time (assumes gravity x to be)
-
-    /**
-    The following system of equations was solved by wolframalpha.com:
-    
-    t := time
-    s := start time of rocket (delay)
-
-    comet.x0 + comet.vX0 * t = rocket.x0 + rocket.vX0 * (t-s)
-    comet.y0 + comet.vY0 * t + 0.5 * gravityY * t^2 = rocket.y0 + rocket.vY0 * (t-s) + 0.5 * gravityY * (t-s)^2
-
-    substituting letters (for ease of use):
-
-    a + b*t = c + d * (t-s)
-    e + f*t + 0.5 * k * t^2 = g + h * (t-s) + 0.5 * k * (t-s)^2
-
-    the computer generated solution of this system of equations is used later on
-    **/
-
-    float a = comet.x;
-    float b = comet.vX;
-    float c = rocket.x;
-    float e = comet.y;
-    float f = comet.vY;
-    float g = rocket.y;
-    
-    float d = rocket.getCurrentLaunchVX();
-    float h = rocket.getCurrentLaunchVY();
-
-    float k = gravityY;
-
-    float s1, s2;
-
-    if (k*(b + d) != 0) // checks if solvable
-    {
-      // computer generated formula
-      // calculate the start time (s), two possible solutions
-      s1 = (-0.5*sqrt(sq(-2*a*k+2*b*h+2*c*k-2*d*f)-4*(-b*k-d*k)
-      *(-2*a*f+2*a*h+2*b*e-2*b*g+2*c*f-2*c*h-2*d*e+2*d*g))-a*k+b*h+c*k-d*f)/(k*(b+d));
-      s2 = (+0.5*sqrt(sq(-2*a*k+2*b*h+2*c*k-2*d*f)-4*(-b*k-d*k)
-      *(-2*a*f+2*a*h+2*b*e-2*b*g+2*c*f-2*c*h-2*d*e+2*d*g))-a*k+b*h+c*k-d*f)/(k*(b+d));
-
-      // print out calculated start times
-      // start times can be negative (in the past)
-      println("s1, s2: " + s1 + ", " + s2);
-
-      if (s1 <= 0 && s1 <= 0) {
-        // already to late => launch immediately
-        rocket.launch();
-      } else {
-        // set the timer for the right moment (latest possible start time)
-        rocket.launchTimer = max(s1, s2);
-      }
-    }
+    rocketSlider.setLocked(true);
+    rocket.primeLaunchTimer();
   }
 }
 
@@ -395,6 +344,7 @@ class Slider {
   float value;
   float valueScaling;
   String postfix;
+  boolean locked;
   
   Slider(float x, float y, PImage backgroundImage, PImage knobImage, float valueScaling, String postfix) {
     this.x = x; 
@@ -405,10 +355,18 @@ class Slider {
     value = 0.0;
     this.valueScaling = valueScaling;
     this.postfix = postfix;
+    locked = false;
+  }
+
+  void setLocked(boolean locked) {
+    this.locked = locked;
+    if (locked == true) {
+      isDown = false;
+    }
   }
   
   void mousePressed() {
-    if (checkBounds()) {
+    if (checkBounds() && !locked) {
       isDown = true;
     }
   }
@@ -460,6 +418,63 @@ class Rocket extends GameObject {
     isLaunched = false;
     this.rotation = rotation;
     launchTimer = -1;
+  }
+
+  void primeLaunchTimer() {
+    // calculate rocket start time (assumes gravity x to be)
+
+    /**
+    The following system of equations was solved by wolframalpha.com:
+    
+    t := time
+    s := start time of rocket (delay)
+
+    comet.x0 + comet.vX0 * t = rocket.x0 + rocket.vX0 * (t-s)
+    comet.y0 + comet.vY0 * t + 0.5 * gravityY * t^2 = rocket.y0 + rocket.vY0 * (t-s) + 0.5 * gravityY * (t-s)^2
+
+    substituting letters (for ease of use):
+
+    a + b*t = c + d * (t-s)
+    e + f*t + 0.5 * k * t^2 = g + h * (t-s) + 0.5 * k * (t-s)^2
+
+    the computer generated solution of this system of equations is used later on
+    **/
+
+    float a = comet.x;
+    float b = comet.vX;
+    float c = rocket.x;
+    float e = comet.y;
+    float f = comet.vY;
+    float g = rocket.y;
+    
+    float d = rocket.getCurrentLaunchVX();
+    float h = rocket.getCurrentLaunchVY();
+
+    float k = gravityY;
+
+    float s1, s2;
+
+    if (k*(b + d) != 0) // checks if solvable
+    {
+      // computer generated formula
+      // calculate the start time (s), two possible solutions
+      s1 = (-0.5*sqrt(sq(-2*a*k+2*b*h+2*c*k-2*d*f)-4*(-b*k-d*k)
+      *(-2*a*f+2*a*h+2*b*e-2*b*g+2*c*f-2*c*h-2*d*e+2*d*g))-a*k+b*h+c*k-d*f)/(k*(b+d));
+      s2 = (+0.5*sqrt(sq(-2*a*k+2*b*h+2*c*k-2*d*f)-4*(-b*k-d*k)
+      *(-2*a*f+2*a*h+2*b*e-2*b*g+2*c*f-2*c*h-2*d*e+2*d*g))-a*k+b*h+c*k-d*f)/(k*(b+d));
+
+      // print out calculated start times
+      // start times can be negative (in the past)
+      println("s1, s2: " + s1 + ", " + s2);
+
+      if (s1 <= 0 && s1 <= 0) {
+        // already to late => launch immediately
+        rocket.launch();
+      } else {
+        // set the timer for the right moment (latest possible start time)
+        rocket.launchTimer = max(s1, s2);
+      }
+    }
   }
 
   void launch() {
@@ -652,6 +667,8 @@ void teardownDynamic() {
   }
   // stop time again
   timeScale = 0;
+  // reset UI
+  rocketSlider.setLocked(false);
 }
 
 // called every frame before drawing
