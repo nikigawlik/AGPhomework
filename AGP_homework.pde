@@ -23,7 +23,7 @@ final float yOrigin = 650; // in px
 
 final float baseWorldHeight = 200 * km; // in m, height of the displayed world
 final float markerHeight = 30 * km; // in m, height of horizontal marker line
-final float baseTimeScale = 10; // in s/s, time scale
+final float baseTimeScale = 1; // in s/s, time scale
 
 // comet
 final float initialImpactAngle = radians(170); // initial comet impact angle relative to x axis, in radians
@@ -35,6 +35,9 @@ final float initialVelocityVariance = 1600 * kmH;
 // calculate launch speed to reach the markerHeight (subtracting the rocket's height of 100 meters at 100x scale)
 final float rocketLaunchSpeedMin = sqrt(2 * -gravityY * (markerHeight - 100*100));
 final float rocketLaunchSpeed = rocketLaunchSpeedMin * 2; // actual speed is 2 times that
+
+// minimum distance for rocket and comet to count as collision
+final float rocketCometCollisionDistance = 120; // in m
 
 // Set that contains all currently existing game objects
 HashSet<GameObject> allObjects = new HashSet<GameObject>();
@@ -177,6 +180,8 @@ class Particle extends GameObject {
       die();
     }
     lifetime -= deltaTime;
+
+    super.move(deltaTime);
   }
 
   void draw() {
@@ -446,6 +451,7 @@ class Rocket extends GameObject {
   float w = 20*100; // rocket width (100x scale)
   float cap = 20*100; // height of cap (100x scale)
   float rotation; // rocket's rotation in radians, 0 is rocket pointing right
+  float radius = 100*100; // radius for detecting comet collision
   boolean isLaunched;
   float launchTimer;
   
@@ -483,13 +489,38 @@ class Rocket extends GameObject {
         launch();
       }
     }
+
     // handle movement in parent object
     super.move(deltaTime);
+
     // handle collision with ground
     if (y < h/2) {
       y = h/2;
       vX = 0;
       vY = 0;
+    }
+
+    // handle collision with comet
+    if (dist(x, y, comet.x, comet.y) < rocketCometCollisionDistance) {
+      // BOOM!
+      for(int i = 0; i < 100; i++) {
+        float dir = random(0, 2*PI);
+        float len = random(radius + comet.radius) * 0.5;
+        
+        Particle p = new Particle(
+          x + cos(dir) * len, 
+          y + sin(dir) * len, 
+          random(1.0) * 12 + 1, // lifetime in s
+          random(1.0) * (radius + comet.radius) * 1.2 // size of particles
+          );
+
+        p.vX = cos(dir) * len/10;
+        p.vY = sin(dir) * len/10;
+      }
+
+      // hack
+      rocket.y = 10000*km;
+      comet.y = 20000*km;
     }
 
     // handle rotation
