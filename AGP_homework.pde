@@ -14,7 +14,6 @@ final float kmH = 1 / 3.6; // kilometers per hour, in m/s
 
 // -- other constants --
 // world constants
-final float gravityX = 0.0; // in m/s
 final float gravityY = -9.81; // in m/s
 
 // origin of world on screen
@@ -69,11 +68,10 @@ class GameObject {
   
   void move(float deltaTime) {
     // update position accounting for velocity and gravity
-    x += vX * deltaTime + 0.5 * gravityX * pow(deltaTime, 2);
+    x += vX * deltaTime;
     y += vY * deltaTime + 0.5 * gravityY * pow(deltaTime, 2);
 
     // update and remember velocity for next iteration
-    vX += gravityX * deltaTime;
     vY += gravityY * deltaTime;
   }
 
