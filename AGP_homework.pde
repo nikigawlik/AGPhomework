@@ -195,7 +195,7 @@ class Rocket extends GameObject {
 
       // print out calculated start times
       // start times can be negative (in the past)
-      println("s1, s2: " + s1 + ", " + s2);
+      // println("s1, s2: " + s1 + ", " + s2);
 
       if (s1 <= 0 && s1 <= 0) {
         // already to late => launch immediately
