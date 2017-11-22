@@ -518,9 +518,12 @@ class Rocket extends GameObject {
         p.vY = sin(dir) * len/10;
       }
 
-      // hack
-      rocket.y = 10000*km;
-      comet.y = 20000*km;
+      // console message
+      println("The comet was hit!");
+
+      // destroy objects
+      rocket.die();
+      comet.die();
     }
 
     // handle rotation
