@@ -23,13 +23,13 @@ final float yOrigin = 650; // in px
 
 final float baseWorldHeight = 200 * km; // in m, height of the displayed world
 final float markerHeight = 30 * km; // in m, height of horizontal marker line
-final float baseTimeScale = 10.0; // in s/s, time scale
+final float baseTimeScale = 10; // in s/s, time scale
 
 // comet
 final float initialImpactAngle = radians(170); // initial comet impact angle relative to x axis, in radians
-final float initialImpactAngleVariance = 0.1 * radians(10);
-final float initialVelocity = 32000 * kmH; // initial comet velocity, in m/s
-final float initialVelocityVariance = 0.1 * 32000 * kmH;
+final float initialImpactAngleVariance = radians(1);
+final float initialVelocity = 16000 * kmH; // initial comet velocity, in m/s
+final float initialVelocityVariance = 1600 * kmH;
 
 // rocket
 // calculate launch speed to reach the markerHeight (subtracting the rocket's height of 100 meters at 100x scale)
@@ -355,6 +355,28 @@ class LaunchButton extends Button {
     if (timeScale > 0 && !rocket.isLaunched) {
       rocket.launch();
     }
+  }
+
+  void draw() {
+    super.draw();
+
+    // draw countdown
+    String str;
+
+    if (rocket.launchTimer >= 0 && rocket.launchTimer <= 10) {
+      int seconds = (int) rocket.launchTimer;
+      int tenths = (int) ((rocket.launchTimer - floor(rocket.launchTimer)) * 10);
+      str = nf(seconds, 2, 0) + ":" + nf(tenths, 1, 0);
+    } else if(rocket.isLaunched) {
+      str = "BLASTOFF";
+    } else {
+      str = "XX:X";
+    }
+
+    fill(255);
+    textAlign(LEFT, CENTER);
+    textSize(33);
+    text(str, x + 120, y);
   }
 }
 
