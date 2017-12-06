@@ -22,7 +22,7 @@ final float yOrigin = 650; // in px
 
 final float baseWorldHeight = 200 * km; // in m, height of the displayed world
 final float markerHeight = 30 * km; // in m, height of horizontal marker line
-final float baseTimeScale = 1; // in s/s, time scale
+final float baseTimeScale = 5; // in s/s, time scale
 
 // comet
 final float initialImpactAngle = radians(170); // initial comet impact angle relative to x axis, in radians
@@ -67,11 +67,21 @@ class GameObject {
   
   void move(float deltaTime) {
     // update position accounting for velocity and gravity
+    
+    /* // old differential solution
+
     x += vX * deltaTime;
     y += vY * deltaTime + 0.5 * gravityY * pow(deltaTime, 2);
-
     // update and remember velocity for next iteration
     vY += gravityY * deltaTime;
+
+    */
+    
+    // numerical solution
+    // causes slightly slower rocket
+    vY += gravityY * deltaTime;
+    x += vX * deltaTime;
+    y += vY * deltaTime;
   }
 
   void draw() {
@@ -638,7 +648,7 @@ void setup() {
 
   for (int i = 0; i < backgroundImage.pixels.length; i++) {
     float amount = (float) i / backgroundImage.pixels.length;
-    backgroundImage.pixels[i] = lerpColor(c1, c2, amount);; // TODO use realistic colors to represent the athmosphere (and scale correctly)
+    backgroundImage.pixels[i] = lerpColor(c1, c2, amount); // TODO use realistic colors to represent the athmosphere (and scale correctly)
   }
   backgroundImage.updatePixels();
   
