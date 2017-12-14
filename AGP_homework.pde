@@ -15,6 +15,11 @@ final float kmH = 1 / 3.6; // kilometers per hour, in m/s
 // -- other constants --
 // world constants
 final float gravityY = -9.81; // in m/s
+final float cw = 0.45; // "Strömungsbeiwert" for a sphere
+final float e = 2.71828; // Euler's number
+float airDensity(float height) {
+  return 1.3 * pow(e, -9.81 * 1.3 * height / 100000); // formula for calculating the air density
+}
 
 // origin of world on screen
 final float xOrigin = 500; // in px
@@ -29,15 +34,26 @@ final float initialImpactAngle = radians(170); // initial comet impact angle rel
 final float initialImpactAngleVariance = radians(1);
 final float initialVelocity = 16000 * kmH; // initial comet velocity, in m/s
 final float initialVelocityVariance = 1600 * kmH;
+final float cometRadius = 20*100;
+final float cometDensity = 0.9 * 0.9167  + 0.1 * 4.0; // in g/cm^3, 90% ice, 10% rock
+
 
 // rocket
 // calculate launch speed to reach the markerHeight (subtracting the rocket's height of 100 meters at 100x scale)
 final float rocketLaunchSpeedMin = sqrt(2 * -gravityY * (markerHeight - 100*100));
 final float rocketLaunchSpeed = rocketLaunchSpeedMin * 2; // actual speed is 2 times that
+final float rocketRadius = 100*100;
+final float rocketDensity = 99999; // high to simulate little friction
 
 // minimum distance for rocket and comet to count as collision
 final float rocketCometCollisionDistance = 120; // in m
 
+/** utility functions **/
+float sign(float x) {
+  if (x > 0) return 1;
+  if (x < 0) return -1;
+  return 0;
+}
 
 /** classes **/
 
@@ -49,12 +65,21 @@ class GameObject {
   float vX;
   float vY;
   public boolean markedAsDead = false;
+  protected float radius;
+  protected float density;
+  protected float surfaceArea;
+  protected float mass;
 
-  GameObject(float x, float y) {
+  GameObject(float x, float y, float radius, float density) {
     this.x = x;
     this.y = y;
+    this.radius = radius;
+    this.density = density;
     vX = 0;
     vY = 0;
+
+    this.surfaceArea = 4 * PI * sq(radius);
+    this.mass = 4/3 * PI * pow(radius, 3) * density;
 
     // add to global game object list
     newGameObjects.add(this);
@@ -79,7 +104,26 @@ class GameObject {
     
     // numerical solution
     // causes slightly slower rocket
+
+    // apply gravity
     vY += gravityY * deltaTime;
+
+    // apply air friction/resistance
+    vX -= sign(vX) * deltaTime * (cw * airDensity(y) * surfaceArea * sq(vX)) / (2 * mass);
+    vY -= sign(vY) * deltaTime * (cw * airDensity(y) * surfaceArea * sq(vY)) / (2 * mass);
+    
+    if (deltaTime > 0 && this instanceof Comet) {
+      println("---------------------");
+      println("sign(vX) : " + sign(vX));
+      println("deltaTime : " + deltaTime);
+      println("(cw * airDensity(y) : " + (cw * airDensity(y)));
+      println("surfaceArea : " + surfaceArea);
+      println("sq(vX))  : " + sq(vX) );
+      println("(2 * mass) : " + (2 * mass));
+    }
+    // println(deltaTime);  
+
+    // move object
     x += vX * deltaTime;
     y += vY * deltaTime;
   }
@@ -91,11 +135,10 @@ class GameObject {
 
 // class that models and draws the comet
 class Comet extends GameObject{
-  float radius = 20*100; // 20 m, 100x scale
   float averageParticlesPerSecond = 50.0;
 
   Comet(float x, float y, float impactAngle, float velocity) {
-    super(x, y);
+    super(x, y, cometRadius, cometDensity);
     vX = -cos(impactAngle) * velocity; // calculated initial velocity vector
     vY = -sin(impactAngle) * velocity;
   }
@@ -149,12 +192,11 @@ class Rocket extends GameObject {
   float w = 20*100; // rocket width (100x scale)
   float cap = 20*100; // height of cap (100x scale)
   float rotation; // rocket's rotation in radians, 0 is rocket pointing right
-  float radius = 100*100; // radius for detecting comet collision
   boolean isLaunched;
   float launchTimer;
   
   Rocket(float x, float y, float rotation) {
-    super(x, y);
+    super(x, y, rocketRadius, rocketDensity);
     isLaunched = false;
     this.rotation = rotation;
     launchTimer = -1;
@@ -338,7 +380,7 @@ class Particle extends GameObject {
   float h = 1*km;
 
   Particle(float x, float y, float lifetime, float size) {
-    super(x, y);
+    super(x, y, 1, 999999);
     image = particle;
     this.lifetime = lifetime;
     initialLifetime = lifetime;
