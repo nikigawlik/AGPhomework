@@ -110,17 +110,6 @@ class GameObject {
     // apply air friction/resistance
     vX -= sign(vX) * deltaTime * (cw * airDensity(y) * surfaceArea * sq(vX)) / (2 * mass);
     vY -= sign(vY) * deltaTime * (cw * airDensity(y) * surfaceArea * sq(vY)) / (2 * mass);
-    
-    if (deltaTime > 0 && this instanceof Comet) {
-      println("---------------------");
-      println("sign(vX) : " + sign(vX));
-      println("deltaTime : " + deltaTime);
-      println("(cw * airDensity(y) : " + (cw * airDensity(y)));
-      println("surfaceArea : " + surfaceArea);
-      println("sq(vX))  : " + sq(vX) );
-      println("(2 * mass) : " + (2 * mass));
-    }
-    // println(deltaTime);  
 
     // move object
     x += vX * deltaTime;
