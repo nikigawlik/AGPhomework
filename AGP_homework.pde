@@ -32,7 +32,7 @@ final float baseTimeScale = 5; // in s/s, time scale
 // comet
 final float initialImpactAngle = radians(170); // initial comet impact angle relative to x axis, in radians
 final float initialImpactAngleVariance = radians(1);
-final float initialVelocity = 16000 * kmH; // initial comet velocity, in m/s
+final float initialVelocity = 32000 * kmH; // initial comet velocity, in m/s
 final float initialVelocityVariance = 1600 * kmH;
 final float cometRadius = 20*100;
 final float cometDensity = 0.9 * 0.9167  + 0.1 * 4.0; // in g/cm^3, 90% ice, 10% rock
