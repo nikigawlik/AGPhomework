@@ -135,6 +135,7 @@ class Comet extends GameObject{
   void move(float deltaTime) {
     // handle movement in parent object
     super.move(deltaTime);
+
     // handle collision with ground
     if (y < radius) {
       y = radius;
@@ -160,6 +161,21 @@ class Comet extends GameObject{
     // draw circle
     fill(255);
     ellipse(x, y, radius*2, radius*2);
+    
+    // calculate power loss
+    float v = mag(vX, vY);
+    float loss = cw * airDensity(y) * surfaceArea * pow(v, 3) / 2;
+    loss /= 10E12; // convert to terawatt
+
+    pushMatrix();
+    resetMatrix();
+
+    fill(255);
+    textAlign(RIGHT, TOP);
+    textSize(16);
+    text("Power loss: " + nf(loss, 2, 2) + " TW", width - 16, 32);
+
+    popMatrix();
     
     // // draw impact arc (simplified: line)
     // float distanceTillImpact = vX/vY * -y; // helper variable
