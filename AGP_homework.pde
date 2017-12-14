@@ -37,7 +37,6 @@ final float initialVelocityVariance = 1600 * kmH;
 final float cometRadius = 20*100;
 final float cometDensity = 0.9 * 0.9167  + 0.1 * 4.0; // in g/cm^3, 90% ice, 10% rock
 
-
 // rocket
 // calculate launch speed to reach the markerHeight (subtracting the rocket's height of 100 meters at 100x scale)
 final float rocketLaunchSpeedMin = sqrt(2 * -gravityY * (markerHeight - 100*100));
@@ -523,28 +522,6 @@ class LaunchButton extends Button {
     if (timeScale > 0 && !rocket.isLaunched) {
       rocket.launch();
     }
-  }
-
-  void draw() {
-    super.draw();
-
-    // draw countdown
-    String str;
-
-    if (rocket.launchTimer >= 0 && rocket.launchTimer <= 10) {
-      int seconds = (int) rocket.launchTimer;
-      int tenths = (int) ((rocket.launchTimer - floor(rocket.launchTimer)) * 10);
-      str = nf(seconds, 2, 0) + ":" + nf(tenths, 1, 0);
-    } else if(rocket.isLaunched) {
-      str = "BLASTOFF";
-    } else {
-      str = "XX:X";
-    }
-
-    fill(255);
-    textAlign(LEFT, CENTER);
-    textSize(33);
-    text(str, x + 120, y);
   }
 }
 
