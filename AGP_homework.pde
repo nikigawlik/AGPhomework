@@ -203,7 +203,7 @@ void setupDynamic() {
   float impactAngle = initialImpactAngle + random(-1, 1) * initialImpactAngleVariance;
   float velocity = initialVelocity + random(-1, 1) * initialVelocityVariance;
   
-  comet = new Comet(-120*km, 40*km, impactAngle, velocity);
+  comet = new Comet(-120*km, markerHeight * 1.75, impactAngle, velocity);
   rocket = new Rocket(0*km, 0*km, PI/2.0);
 }
 
