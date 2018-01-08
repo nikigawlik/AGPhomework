@@ -32,20 +32,6 @@ class GameObject {
   }
   
   void move(float deltaTime) {
-    // update position accounting for velocity and gravity
-    
-    /* // old differential solution
-
-    x += vX * deltaTime;
-    y += vY * deltaTime + 0.5 * gravityY * pow(deltaTime, 2);
-    // update and remember velocity for next iteration
-    vY += gravityY * deltaTime;
-
-    */
-    
-    // numerical solution
-    // causes slightly slower rocket
-
     // apply gravity
     vY += gravityY * deltaTime;
 
