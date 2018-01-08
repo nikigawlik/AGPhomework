@@ -36,8 +36,13 @@ class GameObject {
     vY += gravityY * deltaTime;
 
     // apply air friction/resistance
-    vX -= sign(vX) * deltaTime * (cw * airDensity(y) * flowArea * sq(vX)) / (2 * mass);
-    vY -= sign(vY) * deltaTime * (cw * airDensity(y) * flowArea * sq(vY)) / (2 * mass);
+    float v = mag(vX, vY);
+    float resistance = cw * airDensity(y) * flowArea * sq(v) / 2;
+
+    if (v != 0) {
+      vX -= sign(vX) * deltaTime * (vX/v) * resistance / mass;
+      vY -= sign(vY) * deltaTime * (vY/v) * resistance / mass;
+    }
 
     // move object
     x += vX * deltaTime;
