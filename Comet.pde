@@ -41,7 +41,7 @@ class Comet extends GameObject{
     
     // calculate power loss
     float v = mag(vX, vY);
-    float loss = cw * airDensity(y) * surfaceArea * pow(v, 3) / 2;
+    float loss = cw * airDensity(y) * flowArea * pow(v, 3) / 2;
     loss /= 1E12; // convert to terawatt
 
     pushMatrix();
