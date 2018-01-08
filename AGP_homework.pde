@@ -190,6 +190,11 @@ void setup() {
   buttonStart = new StartButton();
   buttonLaunch = new LaunchButton();
   rocketSlider = new Slider(width/2, height - 100, sliderBack, sliderFront, 20.0, " °");
+
+  // Run some tests
+  println("Air density at 0: " + airDensity(0));
+  println("Air density at markerHeight: " + airDensity(markerHeight));
+  println("Air density at baseWorldHeight: " + airDensity(baseWorldHeight));
 }
 
 // set up dynamic objects
