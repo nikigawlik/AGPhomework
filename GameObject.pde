@@ -8,7 +8,7 @@ class GameObject {
   public boolean markedAsDead = false;
   protected float radius;
   protected float density;
-  protected float surfaceArea;
+  protected float flowArea;  // "angeströmte Fläche", area that is affected by flow resistance
   protected float mass;
 
   GameObject(float x, float y, float radius, float density) {
@@ -19,7 +19,7 @@ class GameObject {
     vX = 0;
     vY = 0;
 
-    this.surfaceArea = 4 * PI * sq(radius);
+    this.flowArea = PI * sq(radius);
     this.mass = 4/3 * PI * pow(radius, 3) * density;
 
     // add to global game object list
@@ -50,8 +50,8 @@ class GameObject {
     vY += gravityY * deltaTime;
 
     // apply air friction/resistance
-    vX -= sign(vX) * deltaTime * (cw * airDensity(y) * surfaceArea * sq(vX)) / (2 * mass);
-    vY -= sign(vY) * deltaTime * (cw * airDensity(y) * surfaceArea * sq(vY)) / (2 * mass);
+    vX -= sign(vX) * deltaTime * (cw * airDensity(y) * flowArea * sq(vX)) / (2 * mass);
+    vY -= sign(vY) * deltaTime * (cw * airDensity(y) * flowArea * sq(vY)) / (2 * mass);
 
     // move object
     x += vX * deltaTime;
