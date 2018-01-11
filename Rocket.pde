@@ -5,11 +5,14 @@ class Rocket extends GameObject {
   float cap = 20*100; // height of cap (100x scale)
   float rotation; // rocket's rotation in radians, 0 is rocket pointing right
   boolean isLaunched;
+  boolean hasCollided;
   
   Rocket(float x, float y, float rotation) {
     super(x, y, rocketRadius, rocketDensity);
     isLaunched = false;
+    hasCollided = false;
     this.rotation = rotation;
+    hasFriction = false;
   }
 
   void launch() {
@@ -42,9 +45,10 @@ class Rocket extends GameObject {
     }
 
     // handle collision with comet
-    if (dist(x, y, comet.x, comet.y) < rocketCometCollisionDistance) {
-      // BOOM!
-      for(int i = 0; i < 100; i++) {
+    if (dist(x, y, comet.x, comet.y) < rocketCometCollisionDistance && !hasCollided) {
+      hasCollided = true;
+      // spawn some particles
+      for(int i = 0; i < 20; i++) {
         float dir = random(0, 2*PI);
         float len = random(radius + comet.radius) * 0.5;
         
@@ -52,19 +56,29 @@ class Rocket extends GameObject {
           x + cos(dir) * len, 
           y + sin(dir) * len, 
           random(1.0) * 12 + 1, // lifetime in s
-          random(1.0) * (radius + comet.radius) * 1.2 // size of particles
+          random(1.0) * (radius + comet.radius) * 0.4 // size of particles
           );
 
         p.vX = cos(dir) * len/10;
         p.vY = sin(dir) * len/10;
       }
 
+      // Set to same position for visual reasons
+      comet.x = this.x = (comet.x + this.x) / 2;
+      comet.y = this.y = (comet.y + this.y) / 2;
+
+      // Continue as unelastic impact
+      float newVX = (comet.vX * comet.mass + this.vX * this.mass) / (comet.mass + this.mass);
+      float newVY = (comet.vY * comet.mass + this.vY * this.mass) / (comet.mass + this.mass);
+      this.vX = comet.vX = newVX;
+      this.vY = comet.vY = newVY;
+
       // console message
       println("The comet was hit!");
 
-      // destroy objects
-      rocket.die();
-      comet.die();
+      // // destroy objects
+      // rocket.die();
+      // comet.die();
     }
 
     // handle rotation

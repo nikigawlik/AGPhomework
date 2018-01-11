@@ -10,6 +10,7 @@ class GameObject {
   protected float density;
   protected float flowArea;  // "angeströmte Fläche", area that is affected by flow resistance
   protected float mass;
+  protected boolean hasFriction;
 
   GameObject(float x, float y, float radius, float density) {
     this.x = x;
@@ -21,6 +22,7 @@ class GameObject {
 
     this.flowArea = PI * sq(radius);
     this.mass = 4/3 * PI * pow(radius, 3) * density;
+    this.hasFriction = true;
 
     // add to global game object list
     newGameObjects.add(this);
@@ -39,7 +41,7 @@ class GameObject {
     float v = mag(vX, vY);
     float resistance = cw * airDensity(y) * flowArea * sq(v) / 2;
 
-    if (v != 0) {
+    if (v != 0 && hasFriction) {
       vX -= sign(vX) * deltaTime * (vX/v) * resistance / mass;
       vY -= sign(vY) * deltaTime * (vY/v) * resistance / mass;
     }
