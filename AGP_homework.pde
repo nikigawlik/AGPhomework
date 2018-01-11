@@ -16,7 +16,7 @@ final float kmH = 1 / 3.6; // kilometers per hour, in m/s
 // world constants
 final float gravityY = -9.81; // in m/s
 final float cw = 0.45; // "Strömungsbeiwert" for a sphere
-final float e = 2.71828; // Euler's number
+final float e = (float) Math.E; // 2.71828; // Euler's number
 float airDensity(float height) {
   return 1.3 * pow(e, -9.81 * 1.3 * height / 100000); // formula for calculating the air density
 }
@@ -32,7 +32,7 @@ final float baseTimeScale = 5; // in s/s, time scale
 // comet
 final float initialImpactAngle = radians(170); // initial comet impact angle relative to x axis, in radians
 final float initialImpactAngleVariance = radians(1);
-final float initialVelocity = 32000 * kmH; // initial comet velocity, in m/s
+final float initialVelocity = 16000 * kmH; // initial comet velocity, in m/s
 final float initialVelocityVariance = 1600 * kmH;
 final float cometRadius = 20*100;
 final float cometDensity = 0.9 * 0.9167  + 0.1 * 4.0; // in g/cm^3, 90% ice, 10% rock
@@ -45,7 +45,8 @@ final float rocketRadius = 100*100;
 final float rocketDensity = 99999; // high to simulate little friction
 
 // minimum distance for rocket and comet to count as collision
-final float rocketCometCollisionDistance = 120; // in m
+// final float rocketCometCollisionDistance = 120; // in m, realistic value
+final float rocketCometCollisionDistance = 120*50; // in m, value that's good for gameplay
 
 /** utility functions **/
 float sign(float x) {
