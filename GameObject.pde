@@ -42,8 +42,8 @@ class GameObject {
     float resistance = cw * airDensity(y) * flowArea * sq(v) / 2;
 
     if (v != 0 && hasFriction) {
-      vX -= sign(vX) * deltaTime * (vX/v) * resistance / mass;
-      vY -= sign(vY) * deltaTime * (vY/v) * resistance / mass;
+      vX -= deltaTime * (vX/v) * resistance / mass;
+      vY -= deltaTime * (vY/v) * resistance / mass;
     }
 
     // move object
