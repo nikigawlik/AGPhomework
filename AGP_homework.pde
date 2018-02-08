@@ -35,7 +35,7 @@ final float initialImpactAngleVariance = radians(1);
 final float initialVelocity = 16000 * kmH; // initial comet velocity, in m/s
 final float initialVelocityVariance = 1600 * kmH;
 final float cometRadius = 20;
-final float cometDensity = 0.9 * 9167  + 0.1 * 4000; // in g/cm^3, 90% ice, 10% rock
+final float cometDensity = 0.9 * 9167  + 0.1 * 4000; // in kg/m^3, 90% ice, 10% rock
 
 // rocket
 // calculate launch speed to reach the markerHeight (subtracting the rocket's height of 100 meters at 100x scale)
