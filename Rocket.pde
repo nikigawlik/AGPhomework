@@ -96,7 +96,7 @@ class Rocket extends GameObject {
     rotate(rotation); // apply rotation
     rotate(-PI/2); // counteract the fact that the following lines assume an upright rocket
     // calculate and draw the rocket parts
-    strokeWeight(0);
+    noStroke();
     fill(0);
     rect(-w/2, -h/2, w, h - cap);
     fill(0);

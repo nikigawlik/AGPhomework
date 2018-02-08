@@ -4,6 +4,9 @@ class Comet extends GameObject{
 
   Comet(float x, float y, float impactAngle, float velocity) {
     super(x, y, cometRadius, cometDensity);
+    println("Comet mass: " + this.mass);
+    println("Comet area: " + this.flowArea);
+    hasFriction = true;
     vX = -cos(impactAngle) * velocity; // calculated initial velocity vector
     vY = -sin(impactAngle) * velocity;
   }
@@ -14,22 +17,22 @@ class Comet extends GameObject{
     super.move(deltaTime);
 
     // handle collision with ground
-    if (y < radius) {
-      y = radius;
+    if (y < radius*100) {
+      y = radius*100;
       vX = 0;
       vY = 0;
     }
 
     // some nice particles
-    float numberOfParticles = deltaTime * averageParticlesPerSecond;
+    float numberOfParticles = deltaTime * averageParticlesPerSecond * (mag(vX, vY) / initialVelocity);
     float actualNumber = floor(numberOfParticles) 
       + (random(1.0) < numberOfParticles - floor(numberOfParticles) ? 1 : 0);
     for(int i = 0; i < actualNumber; i++) {
       new Particle(
-        x + (random(1.0) - 0.5) * 1.2 * radius, 
-        y + (random(1.0) - 0.5) * 1.2 * radius, 
+        x + (random(1.0) - 0.5) * 1.2 * radius*100, 
+        y + (random(1.0) - 0.5) * 1.2 * radius*100, 
         random(1.0) * 8 + 1, // lifetime in s
-        random(1.0) * radius * 2 // size of particles
+        random(1.0) * radius*100 * 2 // size of particles
         );
     }
   }
@@ -37,7 +40,7 @@ class Comet extends GameObject{
   void draw() {
     // draw circle
     fill(255);
-    ellipse(x, y, radius*2, radius*2);
+    ellipse(x, y, radius*2*100, radius*2*100);
     
     // calculate power loss
     float v = mag(vX, vY);
