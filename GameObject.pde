@@ -57,27 +57,3 @@ class GameObject {
     // do nothing
   }
 }
-
-// class that draws the floor and other environmental things
-class Floor {
-  float thickness; // thickness of the floor
-  float markerHeight; // height of the marking line -> height at which the comet should be shot
-  
-  Floor(float thickness, float markerHeight) {
-    this.thickness = thickness;
-    this.markerHeight = markerHeight;
-  }
-  
-  void draw() {
-    // draw ground
-    fill(0);
-    noStroke();
-    rect(worldBorderLeft, -thickness, worldWidth, thickness);
-   
-    // draw marker line
-    fill(0);
-    stroke(0xffffffff);
-    strokeWeight(100);
-    line(worldBorderLeft, markerHeight, worldWidth, markerHeight);
-  }
-}
