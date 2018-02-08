@@ -44,8 +44,6 @@ class Rocket extends GameObject {
     // calculate mass of rocket
     float m_r = 0.5 * m_c * sq(v_c) / (0.5 * sq(v_r) - g * h);
 
-    // (mc*vc*vc)/((vr*vr) + g * minClashHeight);
-
     return m_r;
   }
 
@@ -71,6 +69,12 @@ class Rocket extends GameObject {
     // handle collision with comet
     if (dist(x, y, comet.x, comet.y) < rocketCometCollisionDistance && !hasCollided) {
       hasCollided = true;
+
+      // console message
+      println("The comet was hit!");
+      println("-> with mass: " + mass + " kg");
+      println("-> with speed: (" + vX + " m/s, " + vY + " m/s)");
+
       // spawn some particles
       for(int i = 0; i < 20; i++) {
         float dir = random(0, 2*PI);
@@ -96,9 +100,6 @@ class Rocket extends GameObject {
       float newVY = (comet.vY * comet.mass + this.vY * this.mass) / (comet.mass + this.mass);
       this.vX = comet.vX = newVX;
       this.vY = comet.vY = newVY;
-
-      // console message
-      println("The comet was hit!");
 
       // // destroy objects
       // rocket.die();
