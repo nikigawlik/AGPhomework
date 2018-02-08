@@ -42,7 +42,6 @@ final float cometDensity = 0.9 * 9167  + 0.1 * 4000; // in g/cm^3, 90% ice, 10% 
 final float rocketLaunchSpeedMin = sqrt(2 * -gravityY * (markerHeight - 100*100));
 final float rocketLaunchSpeed = rocketLaunchSpeedMin * 2; // actual speed is 2 times that
 final float rocketRadius = 100;
-final float rocketDensity = 100; // high to simulate little friction
 
 // minimum distance for rocket and comet to count as collision
 // final float rocketCometCollisionDistance = 120; // in m, realistic value

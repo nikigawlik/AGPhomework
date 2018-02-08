@@ -71,11 +71,12 @@ class Floor {
   void draw() {
     // draw ground
     fill(0);
-    strokeWeight(0);
+    noStroke();
     rect(worldBorderLeft, -thickness, worldWidth, thickness);
    
     // draw marker line
     fill(0);
+    stroke(0xffffffff);
     strokeWeight(100);
     line(worldBorderLeft, markerHeight, worldWidth, markerHeight);
   }

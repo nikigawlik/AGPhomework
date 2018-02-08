@@ -8,7 +8,7 @@ class Rocket extends GameObject {
   boolean hasCollided;
   
   Rocket(float x, float y, float rotation) {
-    super(x, y, rocketRadius, rocketDensity);
+    super(x, y, rocketRadius, 0); // mass is 0 for now
     isLaunched = false;
     hasCollided = false;
     this.rotation = rotation;
@@ -23,6 +23,30 @@ class Rocket extends GameObject {
     isLaunched = true;
     vX = getCurrentLaunchVX();
     vY = getCurrentLaunchVY();
+    mass = calculateMinMass() * 1.2; // minimum mass + some extra
+  }
+
+  // Mass needed to get a velocity parallel to the ground after collision
+  // (assuming collision at marker height)
+  float calculateMinMass() {
+    float v_r = this.vY; // absolute velocity of Rocket (vertical)
+    float m_c = comet.mass; // mass of comet 
+    float v_c = abs(comet.vY); // absolute velocity of Comet (vertical)
+    float g = abs(gravityY); // G
+    float h = markerHeight; // estimated collision height
+
+    // Rechenweg (Energierhaltung):
+    // E_Raketenstart - E_Höhe = E_Komet
+    // .5 m_r v_r^2 - m_r g h = .5 m_c v_c^2
+    // m_r (.5 v_r^2 - g h) = .5 m_c v_c^2
+    // m_r = .5 m_c v_c^2 / (.5 v_r^2 - g h)
+
+    // calculate mass of rocket
+    float m_r = 0.5 * m_c * sq(v_c) / (0.5 * sq(v_r) - g * h);
+
+    // (mc*vc*vc)/((vr*vr) + g * minClashHeight);
+
+    return m_r;
   }
 
   float getCurrentLaunchVX() {
