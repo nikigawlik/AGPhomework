@@ -21,7 +21,7 @@ class GameObject {
     vY = 0;
 
     this.flowArea = PI * sq(radius);
-    this.mass = 4/3 * PI * pow(radius, 3) * density;
+    this.mass = 4.0/3.0 * PI * pow(radius, 3) * density;
     this.hasFriction = true;
 
     // add to global game object list
@@ -39,11 +39,13 @@ class GameObject {
 
     // apply air friction/resistance
     float v = mag(vX, vY);
-    float resistance = cw * airDensity(y) * flowArea * sq(v) / 2;
+    // float resistance =;
+    // float resistance = cw * airDensity(y) * flowArea * sq(v) / 2;
 
     if (v != 0 && hasFriction) {
-      vX -= deltaTime * (vX/v) * resistance / mass;
-      vY -= deltaTime * (vY/v) * resistance / mass;
+      // println(airDensity(y));
+      vX += deltaTime * -cw * airDensity(y) * flowArea / (2 * mass) * vX * sqrt(sq(vX) + sq(vY));
+      vY += deltaTime * -cw * airDensity(y) * flowArea / (2 * mass) * vY * sqrt(sq(vX) + sq(vY));
     }
 
     // move object
