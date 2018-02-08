@@ -43,6 +43,10 @@ final float rocketLaunchSpeedMin = sqrt(2 * -gravityY * (markerHeight - 100*100)
 final float rocketLaunchSpeed = rocketLaunchSpeedMin * 2; // actual speed is 2 times that
 final float rocketRadius = 100;
 
+final float rocketMassRatio = 12.0; // ratio of rocket mass to fuel mass
+final float rocketGasVelocity = 42000; // "Gasgeschwindigkeit", in m/s
+final float rocketMassFlow = 1000000; // "Massestrom", in kg/s // TODO ausrechnen
+
 // minimum distance for rocket and comet to count as collision
 // final float rocketCometCollisionDistance = 120; // in m, realistic value
 final float rocketCometCollisionDistance = 120*50; // in m, value that's good for gameplay

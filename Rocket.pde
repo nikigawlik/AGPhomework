@@ -6,13 +6,24 @@ class Rocket extends GameObject {
   float rotation; // rocket's rotation in radians, 0 is rocket pointing right
   boolean isLaunched;
   boolean hasCollided;
+
+  float massEmpty;
+  float massPropellant;
+  float vGas;
+  float massFlow;
   
   Rocket(float x, float y, float rotation) {
-    super(x, y, rocketRadius, 0); // mass is 0 for now
+    super(x, y, rocketRadius, 0); // mass is calculated on launch
     isLaunched = false;
     hasCollided = false;
     this.rotation = rotation;
     hasFriction = false;
+
+    vGas = rocketGasVelocity;
+    massFlow = rocketMassFlow; 
+
+    massEmpty = 0.0; // calculated on launch
+    massPropellant = 0.0; // calculated on launch 
   }
 
   void launch() {
@@ -21,15 +32,20 @@ class Rocket extends GameObject {
     }
 
     isLaunched = true;
-    vX = getCurrentLaunchVX();
-    vY = getCurrentLaunchVY();
-    mass = calculateMinMass() * 1.2; // minimum mass + some extra
+    // vX = getCurrentLaunchVX();
+    // vY = getCurrentLaunchVY();
+
+    // initialize masses
+    massEmpty = calculateMinMass() * 1.2; // minimum mass + some extra
+    massPropellant = massEmpty / rocketMassRatio;
+    mass = massEmpty + massPropellant;
   }
 
   // Mass needed to get a velocity parallel to the ground after collision
   // (assuming collision at marker height)
   float calculateMinMass() {
-    float v_r = this.vY; // absolute velocity of Rocket (vertical)
+    // float v_r = this.vY; // absolute velocity of Rocket (vertical)
+    float v_r = getCurrentLaunchVY(); // absolute velocity of Rocket (vertical)
     float m_c = comet.mass; // mass of comet 
     float v_c = abs(comet.vY); // absolute velocity of Comet (vertical)
     float g = abs(gravityY); // G
@@ -56,8 +72,36 @@ class Rocket extends GameObject {
   }
 
   void move(float deltaTime) {
-    // handle movement in parent object
+    // custom acceleration
+    float ejectionAngle = rotation + PI; // opposite to where rocket is pointing
+    // calculate the ejected mass, either by flow and time or just the remaining mass if none is left
+    float ejectedMass = min(massFlow * deltaTime, massPropellant);
+    // subtract ejected mass from current mass
+    massPropellant -= ejectedMass;
+    mass = massEmpty + massPropellant;
+
+    if (mass != 0) {
+      float deltaV = (ejectedMass * -vGas) / mass;
+      vX += cos(ejectionAngle) * deltaV;
+      vY += sin(ejectionAngle) * deltaV;
+    }
+
+    // handle rest of movement in parent object
     super.move(deltaTime);
+
+    // spawn ejection particles
+    float averageParticlesPerSecond = ejectedMass * 0.01;
+    float numberOfParticles = deltaTime * averageParticlesPerSecond * (mag(vX, vY) / initialVelocity);
+    float actualNumber = floor(numberOfParticles) 
+      + (random(1.0) < numberOfParticles - floor(numberOfParticles) ? 1 : 0);
+    for(int i = 0; i < actualNumber; i++) {
+      new Particle(
+        x + (random(1.0) - 0.5) * 1.2 * radius*10, 
+        y + (random(1.0) - 0.5) * 1.2 * radius*10, 
+        random(1.0) * 8 + 1, // lifetime in s
+        random(1.0) * radius*10 * 2 // size of particles
+        );
+    }
 
     // handle collision with ground
     if (y < h/2) {
