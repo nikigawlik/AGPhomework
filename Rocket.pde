@@ -6,6 +6,7 @@ class Rocket extends GameObject {
   float rotation; // rocket's rotation in radians, 0 is rocket pointing right
   boolean isLaunched;
   boolean hasCollided;
+  float launchTimer;
 
   float massEmpty;
   float massPropellant;
@@ -18,6 +19,8 @@ class Rocket extends GameObject {
     hasCollided = false;
     this.rotation = rotation;
     hasFriction = false;
+
+    launchTimer = 3.0;
 
     vGas = rocketGasVelocity;
     massFlow = rocketMassFlow; 
@@ -130,6 +133,12 @@ class Rocket extends GameObject {
       rotation = radians(rocketSlider.value) + PI/2; // set proper rotation
     } else {
       rotation = atan2(vY, vX);
+    }
+
+    // handle launch timer
+    launchTimer -= deltaTime;
+    if (launchTimer <= 0 && !isLaunched) {
+      launch();
     }
   }
 
