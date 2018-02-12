@@ -38,14 +38,10 @@ final float cometRadius = 20;
 final float cometDensity = 0.9 * 9167  + 0.1 * 4000; // in kg/m^3, 90% ice, 10% rock
 
 // rocket
-// calculate launch speed to reach the markerHeight (subtracting the rocket's height of 100 meters at 100x scale)
-final float rocketLaunchSpeedMin = sqrt(2 * -gravityY * (markerHeight - 100*100));
-final float rocketLaunchSpeed = rocketLaunchSpeedMin * 2; // actual speed is 2 times that
 final float rocketRadius = 100;
-
 final float rocketMassRatio = 12.0; // ratio of rocket mass to fuel mass
-final float rocketGasVelocity = 42000; // "Gasgeschwindigkeit", in m/s
-final float rocketMassFlow = 1000000; // "Massestrom", in kg/s // TODO ausrechnen
+final float rocketGasVelocity = 42000; // "Gasgeschwindigkeit", in m/s, unrealistically high
+final float rocketMassFlow = 1E6; // "Massestrom", in kg/s
 
 // minimum distance for rocket and comet to count as collision
 // final float rocketCometCollisionDistance = 120; // in m, realistic value

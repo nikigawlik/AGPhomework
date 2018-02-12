@@ -36,39 +36,9 @@ class Rocket extends GameObject {
     // vY = getCurrentLaunchVY();
 
     // initialize masses
-    massEmpty = calculateMinMass() * 1.2; // minimum mass + some extra
+    massEmpty = 2.7E8; // in kg, experimental value, extremely high but necessarry to divert comet
     massPropellant = massEmpty / rocketMassRatio;
     mass = massEmpty + massPropellant;
-  }
-
-  // Mass needed to get a velocity parallel to the ground after collision
-  // (assuming collision at marker height)
-  float calculateMinMass() {
-    // float v_r = this.vY; // absolute velocity of Rocket (vertical)
-    float v_r = getCurrentLaunchVY(); // absolute velocity of Rocket (vertical)
-    float m_c = comet.mass; // mass of comet 
-    float v_c = abs(comet.vY); // absolute velocity of Comet (vertical)
-    float g = abs(gravityY); // G
-    float h = markerHeight; // estimated collision height
-
-    // Rechenweg (Energierhaltung):
-    // E_Raketenstart - E_Höhe = E_Komet
-    // .5 m_r v_r^2 - m_r g h = .5 m_c v_c^2
-    // m_r (.5 v_r^2 - g h) = .5 m_c v_c^2
-    // m_r = .5 m_c v_c^2 / (.5 v_r^2 - g h)
-
-    // calculate mass of rocket
-    float m_r = 0.5 * m_c * sq(v_c) / (0.5 * sq(v_r) - g * h);
-
-    return m_r;
-  }
-
-  float getCurrentLaunchVX() {
-    return cos(rotation) * rocketLaunchSpeed;
-  }
-
-  float getCurrentLaunchVY() {
-    return sin(rotation) * rocketLaunchSpeed;
   }
 
   void move(float deltaTime) {
@@ -101,10 +71,10 @@ class Rocket extends GameObject {
     float exhaustY = y + sin(rotation + PI) * h * 0.5;
     for(int i = 0; i < actualNumber; i++) {
       new Particle(
-        exhaustX + (random(1.0) - 0.5) * 1.2 * radius*10, 
-        exhaustY + (random(1.0) - 0.5) * 1.2 * radius*10, 
+        exhaustX + (random(1.0) - 0.5) * 1200, 
+        exhaustY + (random(1.0) - 0.5) * 1200, 
         random(1.0) * 8 + 1, // lifetime in s
-        random(1.0) * radius*10 * 2 // size of particles
+        random(1.0) * 2000 // size of particles
         );
     }
 
