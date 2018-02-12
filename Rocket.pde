@@ -12,6 +12,7 @@ class Rocket extends GameObject {
   float massPropellant;
   float vGas;
   float massFlow;
+  float startMass;
   
   Rocket(float x, float y, float rotation) {
     super(x, y, rocketRadius, 0); // mass is calculated on launch
@@ -20,13 +21,48 @@ class Rocket extends GameObject {
     this.rotation = rotation;
     hasFriction = false;
 
-    launchTimer = 3.0;
-
     vGas = rocketGasVelocity;
     massFlow = rocketMassFlow; 
 
-    massEmpty = 0.0; // calculated on launch
-    massPropellant = 0.0; // calculated on launch 
+    massEmpty = 2.7E8; // in kg, experimental value, extremely high but necessarry to divert comet
+    massPropellant = massEmpty / rocketMassRatio;
+    mass = massEmpty + massPropellant;
+    startMass = mass;
+
+    float cometFlightDuration = -comet.x / comet.vX;
+    launchTimer = cometFlightDuration - calculateFlightDuration();
+  }
+
+  float calculateFlightDuration() {
+    // calculate the launch time using fixed point iteration
+    float time = 0.1;
+    // itereate a maximum of 1 000 times
+    for(int i = 0; i < 1E3; i++) {
+      println(time);
+      float lastTime = time;
+      time = launchTimeIterationFormula(lastTime);
+      if (abs(lastTime - time) < 0.001) {
+        return -time;
+      }
+    }
+    // this code should not be reached
+    println("WARNING: Rocket launch calculations did not terminate.");
+    return -time;
+  }
+
+  float launchTimeIterationFormula(float t) {
+    float ht = markerHeight; //<>//
+    float g = -gravityY;
+    float mStart = startMass;
+    float q = -massFlow;
+    float vg = vGas;
+    // println("ht: " + ht); 
+    // println("g: " + g); 
+    // println("mStart: " + mStart); 
+    // println("q: " + q); 
+
+    return (-ht - g * sq(t) * 0.5 - vg * (mStart / q - t) 
+      * log(1.0 - (q * t)/mStart)) / vg;
   }
 
   void launch() {
@@ -37,49 +73,46 @@ class Rocket extends GameObject {
     isLaunched = true;
     // vX = getCurrentLaunchVX();
     // vY = getCurrentLaunchVY();
-
-    // initialize masses
-    massEmpty = 2.7E8; // in kg, experimental value, extremely high but necessarry to divert comet
-    massPropellant = massEmpty / rocketMassRatio;
-    mass = massEmpty + massPropellant;
   }
 
   void move(float deltaTime) {
-    // custom acceleration
-    float ejectionAngle = rotation + PI; // opposite to where rocket is pointing
-    // calculate the ejected mass, either by flow and time or just the remaining mass if none is left
-    float ejectedMass = min(massFlow * deltaTime, massPropellant);
-    // subtract ejected mass from current mass
-    massPropellant -= ejectedMass;
-    mass = massEmpty + massPropellant; // recalculate total mass
+    if (isLaunched) {
+      // custom acceleration
+      float ejectionAngle = rotation + PI; // opposite to where rocket is pointing
+      // calculate the ejected mass, either by flow and time or just the remaining mass if none is left
+      float ejectedMass = min(massFlow * deltaTime, massPropellant);
+      // subtract ejected mass from current mass
+      massPropellant -= ejectedMass;
+      mass = massEmpty + massPropellant; // recalculate total mass
 
-    if (mass != 0) {
-      // caclulate the acceleration based on the ejected mass and the velocity of the gas
-      // "nach Impulserhaltungssatz"
-      float deltaV = (ejectedMass * -vGas) / mass;
-      // ... and add it to the current speed
-      vX += cos(ejectionAngle) * deltaV;
-      vY += sin(ejectionAngle) * deltaV;
+      if (mass != 0) {
+        // caclulate the acceleration based on the ejected mass and the velocity of the gas
+        // "nach Impulserhaltungssatz"
+        float deltaV = (ejectedMass * -vGas) / mass;
+        // ... and add it to the current speed
+        vX += cos(ejectionAngle) * deltaV;
+        vY += sin(ejectionAngle) * deltaV;
+      }
+      
+      // spawn ejection particles
+      float averageParticlesPerSecond = ejectedMass * 0.01;
+      float numberOfParticles = deltaTime * averageParticlesPerSecond;
+      float actualNumber = floor(numberOfParticles) 
+        + (random(1.0) < numberOfParticles - floor(numberOfParticles) ? 1 : 0);
+      float exhaustX = x + cos(rotation + PI) * h * 0.5;
+      float exhaustY = y + sin(rotation + PI) * h * 0.5;
+      for(int i = 0; i < actualNumber; i++) {
+        new Particle(
+          exhaustX + (random(1.0) - 0.5) * 1200, 
+          exhaustY + (random(1.0) - 0.5) * 1200, 
+          random(1.0) * 8 + 1, // lifetime in s
+          random(1.0) * 2000 // size of particles
+          );
+      }
     }
 
     // handle rest of movement in parent object (gravity, updating position)
     super.move(deltaTime);
-
-    // spawn ejection particles
-    float averageParticlesPerSecond = ejectedMass * 0.01;
-    float numberOfParticles = deltaTime * averageParticlesPerSecond;
-    float actualNumber = floor(numberOfParticles) 
-      + (random(1.0) < numberOfParticles - floor(numberOfParticles) ? 1 : 0);
-    float exhaustX = x + cos(rotation + PI) * h * 0.5;
-    float exhaustY = y + sin(rotation + PI) * h * 0.5;
-    for(int i = 0; i < actualNumber; i++) {
-      new Particle(
-        exhaustX + (random(1.0) - 0.5) * 1200, 
-        exhaustY + (random(1.0) - 0.5) * 1200, 
-        random(1.0) * 8 + 1, // lifetime in s
-        random(1.0) * 2000 // size of particles
-        );
-    }
 
     // handle collision with ground
     if (y < h/2) {
@@ -139,6 +172,7 @@ class Rocket extends GameObject {
     launchTimer -= deltaTime;
     if (launchTimer <= 0 && !isLaunched) {
       launch();
+      println("LAUNCH");
     }
   }
 

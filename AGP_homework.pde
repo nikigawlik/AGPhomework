@@ -30,7 +30,7 @@ final float markerHeight = 30 * km; // in m, height of horizontal marker line
 final float baseTimeScale = 5; // in s/s, time scale
 
 // comet
-final float initialImpactAngle = radians(170); // initial comet impact angle relative to x axis, in radians
+final float initialImpactAngle = radians(172); // initial comet impact angle relative to x axis, in radians
 final float initialImpactAngleVariance = radians(1);
 final float initialVelocity = 16000 * kmH; // initial comet velocity, in m/s
 final float initialVelocityVariance = 1600 * kmH;
@@ -137,7 +137,7 @@ class LaunchButton extends Button {
     // draw countdown
     String str;
 
-    if (rocket.launchTimer >= 0 && rocket.launchTimer <= 10) {
+    if (rocket.launchTimer >= 0) {
       int seconds = (int) rocket.launchTimer;
       int tenths = (int) ((rocket.launchTimer - floor(rocket.launchTimer)) * 10);
       str = nf(seconds, 2, 0) + ":" + nf(tenths, 1, 0);
