@@ -78,20 +78,23 @@ class Rocket extends GameObject {
     float ejectedMass = min(massFlow * deltaTime, massPropellant);
     // subtract ejected mass from current mass
     massPropellant -= ejectedMass;
-    mass = massEmpty + massPropellant;
+    mass = massEmpty + massPropellant; // recalculate total mass
 
     if (mass != 0) {
+      // caclulate the acceleration based on the ejected mass and the velocity of the gas
+      // "nach Impulserhaltungssatz"
       float deltaV = (ejectedMass * -vGas) / mass;
+      // ... and add it to the current speed
       vX += cos(ejectionAngle) * deltaV;
       vY += sin(ejectionAngle) * deltaV;
     }
 
-    // handle rest of movement in parent object
+    // handle rest of movement in parent object (gravity, updating position)
     super.move(deltaTime);
 
     // spawn ejection particles
     float averageParticlesPerSecond = ejectedMass * 0.01;
-    float numberOfParticles = deltaTime * averageParticlesPerSecond * (mag(vX, vY) / initialVelocity);
+    float numberOfParticles = deltaTime * averageParticlesPerSecond;
     float actualNumber = floor(numberOfParticles) 
       + (random(1.0) < numberOfParticles - floor(numberOfParticles) ? 1 : 0);
     float exhaustX = x + cos(rotation + PI) * h * 0.5;
