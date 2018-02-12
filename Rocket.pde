@@ -94,10 +94,12 @@ class Rocket extends GameObject {
     float numberOfParticles = deltaTime * averageParticlesPerSecond * (mag(vX, vY) / initialVelocity);
     float actualNumber = floor(numberOfParticles) 
       + (random(1.0) < numberOfParticles - floor(numberOfParticles) ? 1 : 0);
+    float exhaustX = x + cos(rotation + PI) * h * 0.5;
+    float exhaustY = y + sin(rotation + PI) * h * 0.5;
     for(int i = 0; i < actualNumber; i++) {
       new Particle(
-        x + (random(1.0) - 0.5) * 1.2 * radius*10, 
-        y + (random(1.0) - 0.5) * 1.2 * radius*10, 
+        exhaustX + (random(1.0) - 0.5) * 1.2 * radius*10, 
+        exhaustY + (random(1.0) - 0.5) * 1.2 * radius*10, 
         random(1.0) * 8 + 1, // lifetime in s
         random(1.0) * radius*10 * 2 // size of particles
         );
