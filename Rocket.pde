@@ -51,7 +51,7 @@ class Rocket extends GameObject {
   }
 
   float launchTimeIterationFormula(float t) {
-    float ht = markerHeight; //<>//
+    float ht = markerHeight;
     float g = -gravityY;
     float mStart = startMass;
     float q = -massFlow;
